@@ -87,15 +87,10 @@ constant
 
 unsignedNumber
    : unsignedInteger
-   | unsignedReal
    ;
 
 unsignedInteger
    : NUM_INT
-   ;
-
-unsignedReal
-   : NUM_REAL
    ;
 
 sign
@@ -151,7 +146,7 @@ subrangeType
 
 typeIdentifier
    : identifier
-   | (CHAR | BOOLEAN | INTEGER | REAL | STRING)
+   | (CHAR | BOOLEAN | INTEGER | STRING)
    ;
 
 structuredType
@@ -761,11 +756,6 @@ PROGRAM
    ;
 
 
-REAL
-   : R E A L
-   ;
-
-
 RECORD
    : R E C O R D
    ;
@@ -1010,10 +1000,6 @@ NUM_INT
    : ('0' .. '9') +
    ;
 
-
-NUM_REAL
-   : ('0' .. '9') + (('.' ('0' .. '9') + (EXPONENT)?)? | EXPONENT)
-   ;
 
 
 fragment EXPONENT

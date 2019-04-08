@@ -1,4 +1,4 @@
-// Generated from C:/Users/Asus/Documents/GitHub/CMPILER-MP/src\APascalet.g4 by ANTLR 4.7.2
+package gen;// Generated from C:/Users/Kevin/IdeaProjects/CMPILER-MP/src\APascalet.g4 by ANTLR 4.7.2
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
@@ -101,13 +101,6 @@ public class APascaletBaseVisitor<T> extends AbstractParseTreeVisitor<T> impleme
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitUnsignedInteger(APascaletParser.UnsignedIntegerContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitUnsignedReal(APascaletParser.UnsignedRealContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -1,4 +1,4 @@
-// Generated from C:/Users/Asus/Documents/GitHub/CMPILER-MP/src\APascalet.g4 by ANTLR 4.7.2
+package gen;// Generated from C:/Users/Kevin/IdeaProjects/CMPILER-MP/src\APascalet.g4 by ANTLR 4.7.2
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -87,12 +87,6 @@ public interface APascaletVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitUnsignedInteger(APascaletParser.UnsignedIntegerContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link APascaletParser#unsignedReal}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitUnsignedReal(APascaletParser.UnsignedRealContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link APascaletParser#sign}.
 	 * @param ctx the parse tree

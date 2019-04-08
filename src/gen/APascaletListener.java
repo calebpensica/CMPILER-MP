@@ -1,4 +1,4 @@
-// Generated from C:/Users/Asus/Documents/GitHub/CMPILER-MP/src\APascalet.g4 by ANTLR 4.7.2
+package gen;// Generated from C:/Users/Kevin/IdeaProjects/CMPILER-MP/src\APascalet.g4 by ANTLR 4.7.2
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -136,16 +136,6 @@ public interface APascaletListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitUnsignedInteger(APascaletParser.UnsignedIntegerContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link APascaletParser#unsignedReal}.
-	 * @param ctx the parse tree
-	 */
-	void enterUnsignedReal(APascaletParser.UnsignedRealContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link APascaletParser#unsignedReal}.
-	 * @param ctx the parse tree
-	 */
-	void exitUnsignedReal(APascaletParser.UnsignedRealContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link APascaletParser#sign}.
 	 * @param ctx the parse tree

@@ -1,4 +1,4 @@
-// Generated from C:/Users/Asus/Documents/GitHub/CMPILER-MP/src\APascalet.g4 by ANTLR 4.7.2
+package gen;// Generated from C:/Users/Kevin/IdeaProjects/CMPILER-MP/src\APascalet.g4 by ANTLR 4.7.2
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -166,18 +166,6 @@ public class APascaletBaseListener implements APascaletListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitUnsignedInteger(APascaletParser.UnsignedIntegerContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterUnsignedReal(APascaletParser.UnsignedRealContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitUnsignedReal(APascaletParser.UnsignedRealContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

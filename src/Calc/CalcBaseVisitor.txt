@@ -1,0 +1,81 @@
+import gen.APascaletParser;
+
+import java.util.HashMap;
+
+public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Double> {
+    private HashMap<String, Double> variables = new HashMap<String, Double>();
+
+    @Override
+    public Double visitPlus(APascaletParser.PlusContext ctx) {
+        return visit(ctx.plusOrMinus()) + visit(ctx.multOrDiv());
+    }
+
+    @Override
+    public Double visitMinus(APascaletParser.MinusContext ctx) {
+        return visit(ctx.plusOrMinus()) - visit(ctx.multOrDiv());
+    }
+
+    @Override
+    public Double visitMultiplication(APascaletParser.MultiplicationContext ctx) {
+        return visit(ctx.multOrDiv()) * visit(ctx.pow());
+    }
+
+    @Override
+    public Double visitDivision(APascaletParser.DivisionContext ctx) {
+        return visit(ctx.multOrDiv()) / visit(ctx.pow());
+    }
+
+    @Override
+    public Double visitSetVariable(APascaletParser.SetVariableContext ctx) {
+        Double value = visit(ctx.plusOrMinus());
+        variables.put(ctx.ID().getText(), value);
+        return value;
+    }
+
+    @Override
+    public Double visitPower(APascaletParser.PowerContext ctx) {
+        if (ctx.pow() != null)
+            return Math.pow(visit(ctx.unaryMinus()), visit(ctx.pow()));
+        return visit(ctx.unaryMinus());
+    }
+
+    @Override
+    public Double visitChangeSign(APascaletParser.ChangeSignContext ctx) {
+        return -1*visit(ctx.unaryMinus());
+    }
+
+    @Override
+    public Double visitBraces(APascaletParser.BracesContext ctx) {
+        return visit(ctx.plusOrMinus());
+    }
+
+    @Override
+    public Double visitConstantPI(APascaletParser.ConstantPIContext ctx) {
+        return Math.PI;
+    }
+
+    @Override
+    public Double visitConstantE(APascaletParser.ConstantEContext ctx) {
+        return Math.E;
+    }
+
+    @Override
+    public Double visitInt(APascaletParser.IntContext ctx) {
+        return Double.parseDouble(ctx.INT().getText());
+    }
+
+    @Override
+    public Double visitVariable(APascaletParser.VariableContext ctx) {
+        return variables.get(ctx.ID().getText());
+    }
+
+    @Override
+    public Double visitDouble(APascaletParser.DoubleContext ctx) {
+        return Double.parseDouble(ctx.DOUBLE().getText());
+    }
+
+    @Override
+    public Double visitCalculate(APascaletParser.CalculateContext ctx) {
+        return visit(ctx.plusOrMinus());
+    }
+}

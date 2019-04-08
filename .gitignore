@@ -2,3 +2,16 @@
 *.xml
 *.iml
 *.class
+out/production/CMPILER-MP/APascalet.g4
+out/production/CMPILER-MP/Calc/Calc.g4
+out/production/CMPILER-MP/Calc/CalcBaseVisitor.txt
+out/production/CMPILER-MP/Calc/gen/Calc/Calc.interp
+out/production/CMPILER-MP/Calc/gen/Calc/Calc.tokens
+out/production/CMPILER-MP/Calc/gen/Calc/CalcLexer.interp
+out/production/CMPILER-MP/Calc/gen/Calc/CalcLexer.tokens
+out/production/CMPILER-MP/Calc/input.txt
+out/production/CMPILER-MP/gen/APascalet.interp
+out/production/CMPILER-MP/gen/APascalet.tokens
+out/production/CMPILER-MP/gen/APascaletLexer.interp
+out/production/CMPILER-MP/gen/APascaletLexer.tokens
+out/production/CMPILER-MP/input.txt

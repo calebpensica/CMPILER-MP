@@ -3,7 +3,7 @@ var X, Y, Z: integer;
 procedure P0(Y: integer);
 begin {P0}
    X := Y+Z;
-   writeln('***');
+   writeln('***', 1, '12312');
 end; {P0}
 procedure P2(X:integer);
 var Y, Z: integer;

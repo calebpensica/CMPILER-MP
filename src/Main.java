@@ -27,12 +27,20 @@ public class Main {
             e.printStackTrace();
         }
         APascaletLexer lexer = new APascaletLexer(input);
+
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(new ErrorMessages());
+
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         APascaletParser parser = new APascaletParser(tokens);
+
+        parser.removeErrorListeners();
+        parser.addErrorListener(new ErrorMessages());
+
         ParseTree tree = parser.program();
 
         APascaletBaseVisitor calcVisitor = new APascaletBaseVisitor();
-        Double result = calcVisitor.visit(tree);
+        Integer result = calcVisitor.visit(tree);
         System.out.println("Result: " + result);
     }
 }

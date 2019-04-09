@@ -15,3 +15,4 @@ out/production/CMPILER-MP/gen/APascalet.tokens
 out/production/CMPILER-MP/gen/APascaletLexer.interp
 out/production/CMPILER-MP/gen/APascaletLexer.tokens
 out/production/CMPILER-MP/input.txt
+out/production/CMPILER-MP/APascalet2.g4

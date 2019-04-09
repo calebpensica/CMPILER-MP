@@ -1,3 +1,38 @@
+/*
+BSD License
+
+Copyright (c) 2013, Tom Everett
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. Neither the name of Tom Everett nor the names of its contributors
+   may be used to endorse or promote products derived from this software
+   without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+/*
+Adapted from pascal.g by  Hakki Dogusan, Piet Schoutteten and Marton Papp
+*/
+
 grammar APascalet2;
 
 program
@@ -9,27 +44,16 @@ programHeading
    | UNIT identifier SEMI
    ;
 
-typeDefinitionPart
-   : TYPE (typeDefinition SEMI) +
+identifier
+   : IDENT
    ;
 
-typeDefinition
-   : identifier EQUAL (type | functionType | procedureType)
+block
+   : (labelDeclarationPart | constantDefinitionPart | typeDefinitionPart | variableDeclarationPart | procedureAndFunctionDeclarationPart | usesUnitsPart | IMPLEMENTATION)* compoundStatement
    ;
 
-functionType
-   : FUNCTION (formalParameterList)? COLON resultType
-   ;
-
-procedureType
-   : PROCEDURE (formalParameterList)?
-   ;
-resultType
-   : typeIdentifier
-   ;
-
-componentType
-   : type
+usesUnitsPart
+   : USES identifierList SEMI
    ;
 
 labelDeclarationPart
@@ -48,29 +72,74 @@ constantDefinition
    : identifier EQUAL constant
    ;
 
-block
-   : (labelDeclarationPart | constantDefinitionPart | typeDefinitionPart | variableDeclarationPart | procedureAndFunctionDeclarationPart | IMPLEMENTATION)* compoundStatement
-     ;
+constantChr
+   : CHR LPAREN unsignedInteger RPAREN
+   ;
 
-structuredType
-   : PACKED unpackedStructuredType
-   | unpackedStructuredType
+constant
+   : unsignedNumber
+   | sign unsignedNumber
+   | identifier
+   | sign identifier
+   | string
+   | constantChr
+   ;
+
+unsignedNumber
+   : unsignedInteger
+   ;
+
+unsignedInteger
+   : NUM_INT
+   ;
+
+sign
+   : PLUS
+   | MINUS
+   ;
+
+bool
+   : TRUE
+   | FALSE
+   ;
+
+string
+   : STRING_LITERAL
+   ;
+
+typeDefinitionPart
+   : TYPE (typeDefinition SEMI) +
+   ;
+
+typeDefinition
+   : identifier EQUAL (type | functionType | procedureType)
+   ;
+
+functionType
+   : FUNCTION (formalParameterList)? COLON resultType
+   ;
+
+procedureType
+   : PROCEDURE (formalParameterList)?
    ;
 
 type
    : simpleType
    | structuredType
+   | pointerType
    ;
 
 simpleType
    : scalarType
    | subrangeType
    | typeIdentifier
+   | stringtype
    ;
 
 scalarType
    : LPAREN identifierList RPAREN
    ;
+
 subrangeType
    : constant DOTDOT constant
    ;
@@ -78,6 +147,86 @@ subrangeType
 typeIdentifier
    : identifier
    | (CHAR | BOOLEAN | INTEGER | STRING)
+   ;
+
+structuredType
+   : PACKED unpackedStructuredType
+   | unpackedStructuredType
+   ;
+
+unpackedStructuredType
+   : arrayType
+   | recordType
+   | setType
+   | fileType
+   ;
+
+stringtype
+   : STRING LBRACK (identifier | unsignedNumber) RBRACK
+   ;
+
+arrayType
+   : ARRAY LBRACK typeList RBRACK OF componentType
+   | ARRAY LBRACK2 typeList RBRACK2 OF componentType
+   ;
+
+typeList
+   : indexType (COMMA indexType)*
+   ;
+
+indexType
+   : simpleType
+   ;
+
+componentType
+   : type
+   ;
+
+recordType
+   : RECORD fieldList? END
+   ;
+
+fieldList
+   : fixedPart (SEMI variantPart)?
+   | variantPart
+   ;
+
+fixedPart
+   : recordSection (SEMI recordSection)*
+   ;
+
+recordSection
+   : identifierList COLON type
+   ;
+
+variantPart
+   : CASE tag OF variant (SEMI variant)*
+   ;
+
+tag
+   : identifier COLON typeIdentifier
+   | typeIdentifier
+   ;
+
+variant
+   : constList COLON LPAREN fieldList RPAREN
+   ;
+
+setType
+   : SET OF baseType
+   ;
+
+baseType
+   : simpleType
+   ;
+
+fileType
+   : FILE OF type
+   | FILE
+   ;
+
+pointerType
+   : POINTER typeIdentifier
    ;
 
 variableDeclarationPart
@@ -128,79 +277,8 @@ functionDeclaration
    : FUNCTION identifier (formalParameterList)? COLON resultType SEMI block
    ;
 
-typeList
-   : indexType (COMMA indexType)*
-   ;
-
-indexType
-   : simpleType
-   ;
-
-unpackedStructuredType
-   : arrayType
-   ;
-
-arrayType
-   : ARRAY LBRACK typeList RBRACK OF componentType
-   | ARRAY LBRACK2 typeList RBRACK2 OF componentType
-   ;
-
-procedureStatement
-   : identifier (LPAREN parameterList RPAREN)?
-   ;
-
-forStatement
-   : FOR identifier ASSIGN forList DO statement
-   ;
-
-forList
-   : initialValue (TO | DOWNTO) finalValue
-   ;
-
-initialValue
-   : expression
-   ;
-
-finalValue
-   : expression
-   ;
-
-emptyStatement
-   :
-   ;
-
-constant
-   : unsignedNumber
-   | sign unsignedNumber
-   | identifier
-   | sign identifier
-   | string
-   ;
-
-structuredStatement
-   : compoundStatement
-   | conditionalStatement
-   | repetetiveStatement
-   ;
-
-compoundStatement
-   : BEGIN statements END
-   ;
-
-statements
-   : statement (SEMI statement)*
-   ;
-
-conditionalStatement
-   : ifStatement
-   ;
-
-ifStatement
-   : IF expression THEN statement (: ELSE statement)?
-   ;
-
-repetetiveStatement
-   : forStatement
+resultType
+   : typeIdentifier
    ;
 
 statement
@@ -216,53 +294,8 @@ unlabelledStatement
 simpleStatement
    : assignmentStatement
    | procedureStatement
+   | gotoStatement
    | emptyStatement
-   ;
-
-unsignedInteger
-   : NUM_INT
-   ;
-
-sign
-   : PLUS
-   | MINUS
-   ;
-
-bool
-   : TRUE
-   | FALSE
-   ;
-
-string
-   : STRING_LITERAL
-   ;
-
-unsignedConstant
-   : unsignedNumber
-   | string
-   | NIL
-   ;
-unsignedNumber
-   : unsignedInteger
-   ;
-
-actualParameter
-   : expression parameterwidth*
-   ;
-
-parameterwidth
-   : ':' expression
-   ;
-
-functionDesignator
-   : identifier LPAREN parameterList RPAREN
-   ;
-
-parameterList
-   : actualParameter (COMMA actualParameter)*
-   ;
-identifier
-   : IDENT
    ;
 
 assignmentStatement
@@ -318,9 +351,135 @@ factor
    | LPAREN expression RPAREN
    | functionDesignator
    | unsignedConstant
+   | set
    | NOT factor
    | bool
    ;
+
+unsignedConstant
+   : unsignedNumber
+   | constantChr
+   | string
+   | NIL
+   ;
+
+functionDesignator
+   : identifier LPAREN parameterList RPAREN
+   ;
+
+parameterList
+   : actualParameter (COMMA actualParameter)*
+   ;
+
+set
+   : LBRACK elementList RBRACK
+   | LBRACK2 elementList RBRACK2
+   ;
+
+elementList
+   : element (COMMA element)*
+   |
+   ;
+
+element
+   : expression (DOTDOT expression)?
+   ;
+
+procedureStatement
+   : identifier (LPAREN parameterList RPAREN)?
+   ;
+
+actualParameter
+   : expression parameterwidth*
+   ;
+
+parameterwidth
+   : ':' expression
+   ;
+
+gotoStatement
+   : GOTO label
+   ;
+
+emptyStatement
+   :
+   ;
+
+empty
+   :
+   /* empty */
+   ;
+
+structuredStatement
+   : compoundStatement
+   | conditionalStatement
+   | repetetiveStatement
+   | withStatement
+   ;
+
+compoundStatement
+   : BEGIN statements END
+   ;
+
+statements
+   : statement (SEMI statement)*
+   ;
+
+conditionalStatement
+   : ifStatement
+   | caseStatement
+   ;
+
+ifStatement
+   : IF expression THEN statement (: ELSE statement)?
+   ;
+
+caseStatement
+   : CASE expression OF caseListElement (SEMI caseListElement)* (SEMI ELSE statements)? END
+   ;
+
+caseListElement
+   : constList COLON statement
+   ;
+
+repetetiveStatement
+   : whileStatement
+   | repeatStatement
+   | forStatement
+   ;
+
+whileStatement
+   : WHILE expression DO statement
+   ;
+
+repeatStatement
+   : REPEAT statements UNTIL expression
+   ;
+
+forStatement
+   : FOR identifier ASSIGN forList DO statement
+   ;
+
+forList
+   : initialValue (TO | DOWNTO) finalValue
+   ;
+
+initialValue
+   : expression
+   ;
+
+finalValue
+   : expression
+   ;
+
+withStatement
+   : WITH recordVariableList DO statement
+   ;
+
+recordVariableList
+   : variable (COMMA variable)*
+   ;
+
 
 fragment A
    : ('a' | 'A')
@@ -451,9 +610,7 @@ fragment Z
    : ('z' | 'Z')
    ;
 
-CONST
-   : C O N S T
-   ;
+
 AND
    : A N D
    ;
@@ -472,9 +629,27 @@ BEGIN
 BOOLEAN
    : B O O L E A N
    ;
+
+
+CASE
+   : C A S E
+   ;
+
+
 CHAR
    : C H A R
    ;
+
+
+CHR
+   : C H R
+   ;
+
+
+CONST
+   : C O N S T
+   ;
+
 
 DIV
    : D I V
@@ -485,6 +660,12 @@ DO
    : D O
    ;
 
+
+DOWNTO
+   : D O W N T O
+   ;
+
+
 ELSE
    : E L S E
    ;
@@ -494,6 +675,12 @@ END
    : E N D
    ;
 
+
+FILE
+   : F I L E
+   ;
+
+
 FOR
    : F O R
    ;
@@ -502,6 +689,12 @@ FOR
 FUNCTION
    : F U N C T I O N
    ;
+
+
+GOTO
+   : G O T O
+   ;
+
 
 IF
    : I F
@@ -527,6 +720,12 @@ MOD
    : M O D
    ;
 
+
+NIL
+   : N I L
+   ;
+
+
 NOT
    : N O T
    ;
@@ -541,6 +740,12 @@ OR
    : O R
    ;
 
+
+PACKED
+   : P A C K E D
+   ;
+
+
 PROCEDURE
    : P R O C E D U R E
    ;
@@ -549,6 +754,22 @@ PROCEDURE
 PROGRAM
    : P R O G R A M
    ;
+
+
+RECORD
+   : R E C O R D
+   ;
+
+
+REPEAT
+   : R E P E A T
+   ;
+
+
+SET
+   : S E T
+   ;
+
 
 THEN
    : T H E N
@@ -569,9 +790,21 @@ UNTIL
    : U N T I L
    ;
 
+
 VAR
    : V A R
    ;
+
+
+WHILE
+   : W H I L E
+   ;
+
+
+WITH
+   : W I T H
+   ;
+
 
 PLUS
    : '+'
@@ -703,6 +936,16 @@ RCURLY
    ;
 
 
+UNIT
+   : U N I T
+   ;
+
+
+INTERFACE
+   : I N T E R F A C E
+   ;
+
+
 USES
    : U S E S
    ;
@@ -711,6 +954,12 @@ USES
 STRING
    : S T R I N G
    ;
+
+
+IMPLEMENTATION
+   : I M P L E M E N T A T I O N
+   ;
+
 
 TRUE
    : T R U E
@@ -749,4 +998,10 @@ STRING_LITERAL
 
 NUM_INT
    : ('0' .. '9') +
+   ;
+
+
+
+fragment EXPONENT
+   : ('e') ('+' | '-')? ('0' .. '9') +
    ;

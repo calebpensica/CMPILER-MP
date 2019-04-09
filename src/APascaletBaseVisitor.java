@@ -25,6 +25,83 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
 //    }
 
     @Override
+    public Integer visitVariableDeclaration(APascaletParser.VariableDeclarationContext ctx) {
+        List<APascaletParser.IdentifierContext> tempParam = ctx.identifierList().identifier();
+        String [] param = new String[tempParam.size()];
+        for(int i = 0; i < tempParam.size(); i++)
+        {
+            param[i] = tempParam.get(i).getText();
+            System.out.println("variable name: " + param[i]);
+        }
+        if(ctx.type().simpleType() != null)
+        {
+            if(ctx.type().simpleType().typeIdentifier().INTEGER() != null)
+            {
+                System.out.println("type Integer");
+            }
+            if(ctx.type().simpleType().typeIdentifier().STRING() != null)
+            {
+                System.out.println("type String");
+            }
+            if(ctx.type().simpleType().typeIdentifier().BOOLEAN() != null)
+            {
+                System.out.println("type Boolean");
+            }
+            if(ctx.type().simpleType().typeIdentifier().CHAR() != null)
+            {
+                System.out.println("type Char");
+            }
+        }
+        else{
+           System.out.println("Not a basic data type");
+        }
+        //todo make use of the stacks for the scope
+        return super.visitVariableDeclaration(ctx);
+    }
+    @Override
+    public Integer visitForStatement(APascaletParser.ForStatementContext ctx) {
+        int startingValue, endingValue;
+
+        return super.visitForStatement(ctx);
+    }
+
+    public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject)
+    {
+        boolean relBool = true;
+        switch (operator){
+            case "EQUAL":
+                if(firstObject != secondObject)
+                    relBool = false;
+                break;
+            case "NOT_EQUAL":
+                if(firstObject == secondObject)
+                    relBool = false;
+            case "LT":
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                    if((Integer) firstObject > (Integer) secondObject)
+                        relBool = false;
+                break;
+            case "GT":
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                    if((Integer) firstObject < (Integer) secondObject)
+                        relBool = false;
+                break;
+            case "GE":
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                    if(!((Integer) firstObject >= (Integer) secondObject))
+                        relBool = false;
+                break;
+            case "LE":
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                    if(!((Integer) firstObject <= (Integer) secondObject))
+                        relBool = false;
+                break;
+                default:
+                    System.out.println("No Relational Operator");
+        }
+        return relBool;
+    }
+    @Override
     public Integer visitProcedureStatement(APascaletParser.ProcedureStatementContext ctx) {
 
 //        System.out.println(ctx.identifier().getText());

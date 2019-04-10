@@ -1,8 +1,7 @@
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import gen.APascaletParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import gen.APascaletParser;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
@@ -107,14 +106,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             }
 
         }
-        for(APascaletParser.ConstantDefinitionPartContext constBlock : ctx.block().constantDefinitionPart())
-        {
-            System.out.println(constBlock.getText());
-            for(int j = 0; j < constBlock.constantDefinition().size(); j++) {
-                APascaletParser.ConstantDefinitionContext conBlockDeclarations = constBlock.constantDefinition(j);
-                detectConstantDataType(conBlockDeclarations);
-            }
-        }
         return super.visitProgram(ctx);
     }
     public void initializeArray(APascaletParser.TypeDefinitionContext typeDefinitionContext){
@@ -139,8 +130,11 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             case "integer":
                 globalVariables.put(ident.getText().toLowerCase(), 0);
                 break;
-            case "string":
+            case "String":
                 globalVariables.put(ident.getText().toLowerCase(), "");
+                break;
+            case "char":
+                globalVariables.put(ident.getText().toLowerCase(), '\0');
                 break;
             case "boolean":
                 globalVariables.put(ident.getText().toLowerCase(), Boolean.FALSE);
@@ -149,6 +143,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 //                            TODO add other kinds of data type
         }
     }
+
+
     public void detectConstantDataType(APascaletParser.ConstantDefinitionContext ctx){
         if(ctx.constant().sign() != null || ctx.constant().unsignedNumber() != null)
         {
@@ -165,15 +161,12 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     }
 
-
-
-
     public void variableDeclaration(APascaletParser.VariableDeclarationContext ctx,  HashMap<String, Object> variables) {
         List<APascaletParser.IdentifierContext> tempParam = ctx.identifierList().identifier();
         String [] param = new String[tempParam.size()];
         for(int i = 0; i < tempParam.size(); i++)
         {
-            param[i] = tempParam.get(i).getText();
+            param[i] = tempParam.get(i).getText().toLowerCase();
             System.out.println("variable name: " + param[i]);
         }
         if(ctx.type().simpleType() != null)
@@ -196,7 +189,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 System.out.println("type String");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
-                    variables.put(param[x].toLowerCase(), "");
+                    variables.put(param[x], "");
                 }
             }
             if(ctx.type().simpleType().typeIdentifier().BOOLEAN() != null)
@@ -204,7 +197,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 System.out.println("type Boolean");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
-                    variables.put(param[x].toLowerCase(), false);
+                    variables.put(param[x], false);
                 }
             }
             if(ctx.type().simpleType().typeIdentifier().CHAR() != null)
@@ -212,7 +205,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 System.out.println("type Char");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
-                    variables.put(param[x].toLowerCase(), ' ');
+                    variables.put(param[x], ' ');
                 }
             }
         }
@@ -259,7 +252,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             //push variable name check if ctx is current context then pwede ipush
             if(currentContextParameter.getFunctionContext() != null)
             {
-                variables.put(currentContextParameter.getFunctionContext().identifier().getText().toLowerCase(), currentContextParameter.getFunctionContext().resultType().typeIdentifier().getText());
+                variables.put(currentContextParameter.getFunctionContext().identifier().getText().toLowerCase(),
+                              currentContextParameter.getFunctionContext().resultType().typeIdentifier().getText());
             }
             localVariables.push(variables);
             visit(currentContextParameter.getCurrentContext().compoundStatement());
@@ -289,31 +283,24 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         if(getVariable(ctx.variable().identifier().getText()) == null)
             error("", ctx);
 
-        /*if(var instanceof Character){
-            //Character result =
-
-        }*/
         replaceVariableValue(ctx.variable().identifier().getText(), visitExpression(ctx.expression()));
 
-//        System.out.println("new Val: " + getVariable(ctx.variable().identifier().get(0).getText()) + " | Var: " + var);
         return visitChildren(ctx);
     }
 
+    @Override
+    public Object visitSignedFactor(APascaletParser.SignedFactorContext ctx) {
+        if(ctx.MINUS() != null || ctx.PLUS() != null)
+            if(visit(ctx.factor()) instanceof Integer){
+                if(ctx.MINUS() != null)
+                    return -(Integer)visit(ctx.factor());
+                else if(ctx.PLUS() != null)
+                    return +(Integer)visit(ctx.factor());
+                else System.out.println((ctx.MINUS() != null || ctx.PLUS() != null) + " sasad " +
+                            (visit(ctx.factor()) instanceof Integer));
+            } else error("Expecting integer in minus unary operator", ctx);
 
-    public boolean evaluateLogicalOperators(String operator, Boolean firstObject, Boolean secondObject){
-        if(operator.equalsIgnoreCase("AND"))
-            return firstObject&&secondObject;
-        else if(operator.equalsIgnoreCase("OR"))
-            return firstObject||secondObject;
-        else // if(operator.equalsIgnoreCase("NOT"))
-            return !firstObject;
-    }
-
-    private int evaluateExpression(APascaletParser.ExpressionContext expression){
-        int result = 0;
-        String exp = expression.getText();
-        expression.addChild( expression);
-        return result;
+        return visit(ctx.factor());
     }
 
     @Override
@@ -334,17 +321,17 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         System.exit(-1);
     }
 
+
     @Override
     public Object visitForStatement(APascaletParser.ForStatementContext ctx) {
         int startingValue, endingValue;
         return super.visitForStatement(ctx);
     }
 
-    public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject)
-    {
-
+    public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject){
         boolean relBool = true;
         operator = operator.toLowerCase();
+
         switch (operator){
             case "=":
                 if(!firstObject.equals(secondObject))
@@ -400,7 +387,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
 
         if(ctx.additiveoperator()!=null){
-            evaluateAdditiveExpression(ctx.additiveoperator().getText(), ctx.term(),ctx.simpleExpression(), ctx);
+            return evaluateAdditiveExpression(ctx.additiveoperator().getText(), visit(ctx.term()),
+                    visit(ctx.simpleExpression()), ctx);
         }
 
         return visitChildren(ctx);
@@ -433,12 +421,29 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     @Override
     public Object visitTerm(APascaletParser.TermContext ctx) {
         if(ctx.multiplicativeoperator()!=null){
-            return evaluateMultiplicativeOperator(ctx.multiplicativeoperator().getText(), visit(ctx.signedFactor()), visit(ctx.term()),ctx);
+            return evaluateMultiplicativeOperator(ctx.multiplicativeoperator().getText(),
+                                                  visit(ctx.signedFactor()), visit(ctx.term()), ctx);
         }
         return visitChildren(ctx);
     }
 
+    @Override
+    public Object visitConstantDefinition(APascaletParser.ConstantDefinitionContext ctx) {
+        //check up to three letters
+        if(ctx.identifier().getText().length() <= 3)
+        {
+            if(ctx.constant().string() != null){
 
+            }
+
+        }
+        else
+            error("Error constant identifier exceeded", ctx);
+        //prepend ng final sa isang datatype
+        //check whether global or local
+        return super.visitConstantDefinition(ctx);
+    }
+    
     private Object evaluateMultiplicativeOperator(String operator, Object firstObject, Object secondObject,
                                                   APascaletParser.TermContext ctx){
 
@@ -487,22 +492,5 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     @Override
     public Object visitBool(APascaletParser.BoolContext ctx) {
         return new Boolean(ctx.getText());
-    }
-
-    @Override
-    public Object visitConstantDefinition(APascaletParser.ConstantDefinitionContext ctx) {
-        //check up to three letters
-        if(ctx.identifier().getText().length() <= 3)
-        {
-            if(ctx.constant().string() != null){
-
-            }
-
-        }
-        else
-            error("Error constant identifier exceeded", ctx);
-        //prepend ng final sa isang datatype
-        //check whether global or local
-        return super.visitConstantDefinition(ctx);
     }
 }

@@ -443,7 +443,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         //check whether global or local
         return super.visitConstantDefinition(ctx);
     }
-    
+
     private Object evaluateMultiplicativeOperator(String operator, Object firstObject, Object secondObject,
                                                   APascaletParser.TermContext ctx){
 
@@ -481,6 +481,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     @Override
     public Object visitString(APascaletParser.StringContext ctx) {
+        if(ctx.getText().charAt(0) != '\'' || ctx.getText().charAt(ctx.getText().length()) != '\'')
+            error("Expecting a single quote at the start and end of the string", ctx);
         return ctx.getText().replaceAll("\'", "");
     }
 

@@ -462,7 +462,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 localConstant.put(ctx.identifier().getText(), x);
                 localVariables.push(localConstant);
             }
-
+            else
+                error("Error incompatible type", ctx);
         }
         else
             error("Error constant identifier exceeded", ctx);
@@ -521,5 +522,24 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     @Override
     public Object visitBool(APascaletParser.BoolContext ctx) {
         return new Boolean(ctx.getText());
+    }
+    @Override
+    public Object visitIfStatement(APascaletParser.IfStatementContext ctx) {
+        boolean condition;
+        if(visit(ctx.expression()) instanceof Boolean)
+        {
+            condition = (Boolean) visit(ctx.expression());
+            if(condition){
+                visit(ctx.statement(0));
+                return null;
+            }
+            else if(ctx.ELSE() != null && !condition){
+                visit(ctx.statement(1));
+                return null;
+            }
+        }
+        else
+            error("Not a valid expression error", ctx);
+        return super.visitIfStatement(ctx);
     }
 }

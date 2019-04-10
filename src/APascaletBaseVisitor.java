@@ -1,5 +1,6 @@
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import gen.APascaletParser;
+import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.HashMap;
@@ -14,6 +15,10 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     private Object getVariable(String key) {
 
         key = key.toLowerCase();
+//        System.out.print(key + " | " );
+//        for(String x: globalVariables.keySet())
+//            System.out.print(x);
+//        System.out.println();
         if (!localVariables.empty() && localVariables.peek().containsKey(key))
             return localVariables.peek().get(key);
         else if (globalVariables.containsKey(key))
@@ -86,7 +91,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             for(int i = 0; i < typeBlock.typeDefinition().size(); i++){
                 APascaletParser.TypeDefinitionContext typeBlockDeclarations = typeBlock.typeDefinition(i);
                 initializeArray(typeBlock.typeDefinition(i));
-
+//                todo Array type definitions
             }
         }
 
@@ -130,7 +135,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             case "integer":
                 globalVariables.put(ident.getText().toLowerCase(), 0);
                 break;
-            case "String":
+            case "string":
                 globalVariables.put(ident.getText().toLowerCase(), "");
                 break;
             case "char":
@@ -253,7 +258,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             if(currentContextParameter.getFunctionContext() != null)
             {
                 variables.put(currentContextParameter.getFunctionContext().identifier().getText().toLowerCase(),
-                              currentContextParameter.getFunctionContext().resultType().typeIdentifier().getText());
+                        currentContextParameter.getFunctionContext().resultType().typeIdentifier().getText());
             }
             localVariables.push(variables);
             visit(currentContextParameter.getCurrentContext().compoundStatement());
@@ -270,9 +275,9 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         if(ctx.relationaloperator() != null)
             return evaluateRelationalOperators(ctx.relationaloperator().getText(),
-                    visit(ctx.simpleExpression()),
-                    visit(ctx.expression()),
-                    ctx);
+                                               visit(ctx.simpleExpression()),
+                                               visit(ctx.expression()),
+                                               ctx);
 
         else return visit(ctx.simpleExpression());
     }
@@ -286,7 +291,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         replaceVariableValue(ctx.variable().identifier().getText(), visit(ctx.expression()));
 
-        return visit(ctx);
+        return null;
     }
 
     @Override
@@ -329,60 +334,48 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         return super.visitForStatement(ctx);
     }
 
-    public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject, APascaletParser.ExpressionContext ctx){
-        boolean relBool = true;
-        operator = operator.toLowerCase();
+    public Object evaluateRelationalOperators(String operator, Object firstObject,
+                                               Object secondObject, APascaletParser.ExpressionContext ctx){
 
-        switch (operator){
-            case "=":
-                if(!firstObject.equals(secondObject))
-                    relBool = false;
-                break;
-            case "<>":
-                if(firstObject == secondObject)
-                    relBool = false;
+
+        switch (operator.toLowerCase()){
+            case "=": return firstObject.equals(secondObject);
+            case "<>": return !firstObject.equals(secondObject);
             case "<":
-                if((firstObject instanceof Integer) && (secondObject instanceof  Integer)) {
-                    if ((Integer) firstObject > (Integer) secondObject)
-                        relBool = false;
-                }
-                else {
-                    error("Invalid expression",ctx);
-                }
-                break;
+                    if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                        return (Integer) firstObject < (Integer) secondObject;
+                    else if((firstObject instanceof String) && (secondObject instanceof  String))
+                        return ((String) firstObject).compareTo((String) secondObject) < 0;
+                    else if((firstObject instanceof Character) && (secondObject instanceof Character))
+                            return ((Character) firstObject).compareTo((Character) secondObject) < 0;
+                    break;
             case ">":
-                if((firstObject instanceof Integer) && (secondObject instanceof  Integer)) {
-                    if ((Integer) firstObject < (Integer) secondObject)
-                        relBool = false;
-                }
-                else {
-
-                    error("Invalid expression",ctx);
-                }
-                break;
+                    if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                        return (Integer) firstObject > (Integer) secondObject;
+                    else if((firstObject instanceof String) && (secondObject instanceof  String))
+                        return ((String) firstObject).compareTo((String) secondObject) > 0;
+                    else if((firstObject instanceof Character) && (secondObject instanceof Character))
+                        return ((Character) firstObject).compareTo((Character) secondObject) > 0;
+                    break;
             case ">=":
-                if((firstObject instanceof Integer) && (secondObject instanceof  Integer)) {
-                    if (!((Integer) firstObject >= (Integer) secondObject))
-                        relBool = false;
-                }
-                else {
-
-                    error("Invalid expression",ctx);
-                }
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                    return (Integer) firstObject >= (Integer) secondObject;
+                else if((firstObject instanceof String) && (secondObject instanceof  String))
+                    return ((String) firstObject).compareTo((String) secondObject) >= 0;
+                else if((firstObject instanceof Character) && (secondObject instanceof Character))
+                    return ((Character) firstObject).compareTo((Character) secondObject) >= 0;
                 break;
             case "<=":
-                if((firstObject instanceof Integer) && (secondObject instanceof  Integer)) {
-                    if (!((Integer) firstObject <= (Integer) secondObject))
-                        relBool = false;
-                }
-                else {
-                    error("Invalid expression",ctx);
-                }
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                    return (Integer) firstObject <= (Integer) secondObject;
+                else if((firstObject instanceof String) && (secondObject instanceof  String))
+                    return ((String) firstObject).compareTo((String) secondObject) <= 0;
+                else if((firstObject instanceof Character) && (secondObject instanceof Character))
+                    return ((Character) firstObject).compareTo((Character) secondObject) <= 0;
                 break;
-            default:
-                System.out.println("No Relational Operator");
         }
-        return relBool;
+        error("Relational expression error", ctx);
+        return null;
     }
 
     @Override
@@ -496,7 +489,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     @Override
     public Object visitString(APascaletParser.StringContext ctx) {
-        if(ctx.getText().charAt(0) != '\'' || ctx.getText().charAt(ctx.getText().length()) != '\'')
+        if(ctx.getText().charAt(0) != '\'' || ctx.getText().charAt(ctx.getText().length() - 1) != '\'')
             error("Expecting a single quote at the start and end of the string", ctx);
         return ctx.getText().replaceAll("\'", "");
     }

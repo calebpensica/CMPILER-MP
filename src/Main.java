@@ -40,7 +40,7 @@ public class Main {
         ParseTree tree = parser.program();
 
         APascaletBaseVisitor calcVisitor = new APascaletBaseVisitor();
-        Integer result = calcVisitor.visit(tree);
+        Object result = calcVisitor.visit(tree);
         System.out.println("Result: " + result);
     }
 }

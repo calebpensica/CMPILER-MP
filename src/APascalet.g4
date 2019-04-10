@@ -243,7 +243,6 @@ string
 unsignedConstant
    : unsignedNumber
    | string
-   | NIL
    ;
 unsignedNumber
    : unsignedInteger
@@ -273,7 +272,8 @@ assignmentStatement
    ;
 
 variable
-   : (AT identifier | identifier) (LBRACK expression (COMMA expression)* RBRACK | LBRACK2 expression (COMMA expression)* RBRACK2 | DOT identifier | POINTER)*
+//   : (AT identifier | identifier) (LBRACK expression (COMMA expression)* RBRACK | LBRACK2 expression (COMMA expression)* RBRACK2 | DOT identifier | POINTER)*
+   : identifier (LBRACK expression (COMMA expression)* RBRACK | LBRACK2 expression (COMMA expression)* RBRACK2 )*
    ;
 
 expression

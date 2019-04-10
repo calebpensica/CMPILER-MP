@@ -1,11 +1,11 @@
 import gen.APascaletParser;
+import org.antlr.v4.runtime.Token;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
-public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
+public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     private HashMap<String, contextParameters> functionList = new HashMap<>();
     private HashMap<String, Object> globalVariables = new HashMap<>();
     private Stack<HashMap<String, Object>> localVariables = new Stack<>();
@@ -22,7 +22,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
     private boolean replaceVariableValue(String key, Object newValue){
 
         if (!localVariables.empty() && localVariables.peek().containsKey(key)){
-           localVariables.peek().put(key,newValue); //unsure
+             localVariables.peek().put(key,newValue); //unsure
             return true;
         }
         else if (globalVariables.containsKey(key)){
@@ -35,7 +35,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitProcedureDeclaration(APascaletParser.ProcedureDeclarationContext ctx) {
+    public Object visitProcedureDeclaration(APascaletParser.ProcedureDeclarationContext ctx) {
         contextParameters cp = new contextParameters();
         String parameterList [];
         //add to list
@@ -54,7 +54,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitFunctionDeclaration(APascaletParser.FunctionDeclarationContext ctx) {
+    public Object visitFunctionDeclaration(APascaletParser.FunctionDeclarationContext ctx) {
         contextParameters cp = new contextParameters();
         String parameterList [];
         //add to list
@@ -72,7 +72,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
         return super.visitFunctionDeclaration(ctx);
     }
     @Override
-    public Integer visitProgram(APascaletParser.ProgramContext ctx) {
+    public Object visitProgram(APascaletParser.ProgramContext ctx) {
 
         Object tempObject = null;
 
@@ -131,7 +131,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                 {
                     variables.put(param[x], new Integer(0));
                 }
-
             }
             if(ctx.type().simpleType().typeIdentifier().STRING() != null)
             {
@@ -165,7 +164,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitProcedureStatement(APascaletParser.ProcedureStatementContext ctx) {
+    public Object visitProcedureStatement(APascaletParser.ProcedureStatementContext ctx) {
 
         List<APascaletParser.ActualParameterContext> tempParam = ctx.parameterList().actualParameter();
         String[] param = new String[tempParam.size()];
@@ -177,8 +176,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                 ctx.identifier().getText().equalsIgnoreCase("write")){
             StringBuilder temp = new StringBuilder();
             for (int i = 0; i < param.length; i++) {
-                for (int j = 0; j < param[i].length(); j++) {
-                    if (param[i].charAt(j) == '\'') {
+                if (param[i].charAt(0) == '\'') {
+                    for (int j = 0; j < param[i].length(); j++) {
                         do {
                             j++;
 
@@ -189,12 +188,12 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
 
                         // System.out.println(param[i].charAt(j) + " " + j + " " + param[i].length());
                         if (j != param[i].length() - 1 && param[i].charAt(j) != '+')
-                            error("Syntax error | Line number - " + ctx.getStart().getLine());
-                    } else {
-                        //  todo add expressionParser
-//                        int expression = evaluateExpression(ctx.parameterList().actualParameter(i).expression());
-//                        temp.append(expression);
+                            error("Syntax error", ctx.getStart());
                     }
+                } else {
+//                          todo add expressionParser
+//                        int expression = evaluateExpression(ctx.parameterList().actualParameter(i).expression());
+                    temp.append(visitExpression(tempParam.get(i).expression()));
                 }
             }
             if(ctx.identifier().getText().equalsIgnoreCase("writeln"))
@@ -202,9 +201,10 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
             else
                 System.out.print(temp);
         }
+
         else if(functionList.containsKey(ctx.identifier().getText()))
         {
-            executeFunction(functionList.get(ctx.identifier().getText()));
+             executeFunction(functionList.get(ctx.identifier().getText()));
         }
         else {
             System.out.println(ctx.identifier().getText());
@@ -212,17 +212,14 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
         }
         return super.visitProcedureStatement(ctx);
     }
-    public void executeFunction(contextParameters currentContextParameter)
-    {
+
+    public void executeFunction(contextParameters currentContextParameter) {
         HashMap<String, Object> variables = new HashMap<>();
         System.out.println(currentContextParameter.getCurrentContext().getText());
-        if(currentContextParameter.getCurrentContext().variableDeclarationPart() != null)
-        {
+        if (currentContextParameter.getCurrentContext().variableDeclarationPart() != null) {
             List<APascaletParser.VariableDeclarationPartContext> varDecPart = currentContextParameter.getCurrentContext().variableDeclarationPart();
-            for(int i = 0; i < varDecPart.size(); i++)
-            {
-                for(int x = 0; x < varDecPart.get(i).variableDeclaration().size(); x++)
-                {
+            for (int i = 0; i < varDecPart.size(); i++) {
+                for (int x = 0; x < varDecPart.get(i).variableDeclaration().size(); x++) {
                     variableDeclaration(varDecPart.get(i).variableDeclaration().get(x), variables);
                 }
             }
@@ -231,12 +228,30 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
             localVariables.pop();
         }
     }
-   // @Override public T visitAssignmentStatement(APascaletParser.AssignmentStatementContext ctx) { return visitChildren(ctx); }
+
     @Override
-    public Integer visitAssignmentStatement(APascaletParser.AssignmentStatementContext ctx){
-        //  variable ASSIGN expession
-//        ctx.expression().
-        Object var = getVariable(ctx.variable().identifier().get(0).getText());
+    public Object visitExpression(APascaletParser.ExpressionContext ctx) {
+
+        if(ctx.relationaloperator() != null && visit(ctx.expression()) == null)
+            error("", ctx.getStart());
+
+        if(ctx.relationaloperator() != null)
+            return String.valueOf(evaluateRelationalOperators(ctx.relationaloperator().getText(),
+                    visit(ctx.simpleExpression()),
+                    visit(ctx.expression())));
+
+        else return visit(ctx.simpleExpression());
+    }
+
+    @Override
+    public Object visitFactor(APascaletParser.FactorContext ctx) {
+        return super.visitFactor(ctx);
+    }
+
+    @Override
+    public Object visitAssignmentStatement(APascaletParser.AssignmentStatementContext ctx){
+        //  variable ASSIGN expression
+        Object var = getVariable(ctx.variable().identifier().getText());
 //        System.out.println("Val: " + getVariable(ctx.variable().identifier().get(0).getText()) + " | " + 2);
         if(var instanceof String){
             //String result = evaluateExpression(ctx.expression());
@@ -253,10 +268,22 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
             //Character result =
 
         }
-        replaceVariableValue(ctx.variable().identifier().get(0).getText(),var);
+        replaceVariableValue(ctx.variable().identifier().getText(),var);
 
 //        System.out.println("new Val: " + getVariable(ctx.variable().identifier().get(0).getText()) + " | Var: " + var);
         return visitChildren(ctx);
+    }
+
+
+    
+
+    public boolean evaluateLogicalOperators(String operator, Boolean firstObject, Boolean secondObject){
+        if(operator.equalsIgnoreCase("AND"))
+            return firstObject&&secondObject;
+        else if(operator.equalsIgnoreCase("OR"))
+            return firstObject||secondObject;
+        else // if(operator.equalsIgnoreCase("NOT"))
+            return !firstObject;
     }
 
     private int evaluateExpression(APascaletParser.ExpressionContext expression){
@@ -266,24 +293,15 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
         return result;
     }
 
-    private void error(String msg){
-        System.out.println("Error: " + msg);
+    private void error(String msg, Token start){
+        System.out.println("Error: " + msg + " | Line number - " + start.getLine());
         System.exit(-1);
     }
 
     @Override
-    public Integer visitForStatement(APascaletParser.ForStatementContext ctx) {
+    public Object visitForStatement(APascaletParser.ForStatementContext ctx) {
         int startingValue, endingValue;
         return super.visitForStatement(ctx);
-    }
-
-    public boolean evaluateLogicalOperators(String operator, Boolean firstObject, Boolean secondObject){
-        if(operator.equalsIgnoreCase("AND"))
-            return firstObject&&secondObject;
-        else if(operator.equalsIgnoreCase("OR"))
-            return firstObject||secondObject;
-        else if(operator.equalsIgnoreCase("NOT"))
-            return !firstObject;
     }
 
     public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject)
@@ -292,7 +310,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
         boolean relBool = true;
         switch (operator){
             case "=":
-                if(!firstObject.equals(secondObject))
+                if(firstObject.equals(secondObject))
                     relBool = false;
                 break;
             case "<>":
@@ -304,7 +322,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    //error("Syntax error | Line number - " + ctx.getStart().getLine());
+                    //error
                 }
                 break;
             case ">":
@@ -313,7 +331,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    //error("Syntax error | Line number - " + ctx.getStart().getLine());
+                    //error
                 }
                 break;
             case ">=":
@@ -322,7 +340,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    //error("Syntax error | Line number - " + ctx.getStart().getLine());
+                    //error
                 }
                 break;
             case "<=":
@@ -331,7 +349,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    //error("Syntax error | Line number - " + ctx.getStart().getLine());
+                    //error
                 }
                 break;
             default:
@@ -339,4 +357,17 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
         }
         return relBool;
     }
+
+
+    @Override
+    public Object visitUnsignedNumber(APascaletParser.UnsignedNumberContext ctx) {
+        return new Integer(ctx.getText());
+    }
+
+
+    @Override
+    public Object visitVariable(APascaletParser.VariableContext ctx) {
+        return getVariable(ctx.identifier().getText());
+    }
+
 }

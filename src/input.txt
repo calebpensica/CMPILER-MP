@@ -7,7 +7,7 @@ begin {P0}
 end; {P0}
 
 procedure P2(X:integer);
-   Z := Z+1; 
+   Z := Z+1;
     var Y, Z: integer;
 
        procedure P3(N:integer);
@@ -29,7 +29,7 @@ procedure P2(X:integer);
     end; {P2}
 procedure P1(X, C: integer);
 begin {P1}
-   Z := X+C; 
+   Z := X+C;
    P2(X);
    { *** 3 *** }
 end; {P1}

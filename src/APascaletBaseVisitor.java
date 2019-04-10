@@ -10,14 +10,30 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
     private HashMap<String, Object> globalVariables = new HashMap<>();
     private Stack<HashMap<String, Object>> localVariables = new Stack<>();
 
-    private Object getVariable(String key){
+    private Object getVariable(String key) {
 
-        if(localVariables.peek().containsKey(key))
+        if (!localVariables.empty() && localVariables.peek().containsKey(key))
             return localVariables.peek().get(key);
-        else if(globalVariables.containsKey(key))
+        else if (globalVariables.containsKey(key))
             return globalVariables.get(key);
         return null;
     }
+
+    private boolean replaceVariableValue(String key, Object newValue){
+
+        if (!localVariables.empty() && localVariables.peek().containsKey(key)){
+           localVariables.peek().put(key,newValue); //unsure
+            return true;
+        }
+        else if (globalVariables.containsKey(key)){
+            globalVariables.put(key,newValue);
+            return true;
+        }
+
+
+        return false;
+    }
+
 
     @Override
     public Integer visitProgram(APascaletParser.ProgramContext ctx) {
@@ -34,25 +50,67 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                 for(APascaletParser.IdentifierContext ident : varBlockDeclarations.identifierList().identifier()) {
 //                    varNames.add(ident.getText());
 //                    System.out.println(ident.getText());
-                    switch (varBlockDeclarations.type().getText()) {
-                        case "integer":
-                            globalVariables.put(ident.getText(), 0);
-                            break;
-                        case "String":
-                            globalVariables.put(ident.getText(), "");
-                            break;
-                        case "boolean":
-                            globalVariables.put(ident.getText(), Boolean.FALSE);
-                            break;
-                        default:
-//                            TODO add other kinds of data type
-                    }
+                    setVariableDataType(varBlockDeclarations.type().getText(), ident);
                 }
 
             }
 
         }
         return super.visitProgram(ctx);
+    }
+
+    public void setVariableDataType(String dataType, APascaletParser.IdentifierContext ident){
+        switch (dataType) {
+            case "integer":
+                globalVariables.put(ident.getText(), 0);
+                break;
+            case "String":
+                globalVariables.put(ident.getText(), "");
+                break;
+            case "boolean":
+                globalVariables.put(ident.getText(), Boolean.FALSE);
+                break;
+            default:
+//                            TODO add other kinds of data type
+        }
+    }
+
+
+
+
+    @Override
+    public Integer visitVariableDeclaration(APascaletParser.VariableDeclarationContext ctx) {
+        List<APascaletParser.IdentifierContext> tempParam = ctx.identifierList().identifier();
+        String [] param = new String[tempParam.size()];
+        for(int i = 0; i < tempParam.size(); i++)
+        {
+            param[i] = tempParam.get(i).getText();
+            System.out.println("variable name: " + param[i]);
+        }
+        if(ctx.type().simpleType() != null)
+        {
+            if(ctx.type().simpleType().typeIdentifier().INTEGER() != null)
+            {
+                System.out.println("type Integer");
+            }
+            if(ctx.type().simpleType().typeIdentifier().STRING() != null)
+            {
+                System.out.println("type String");
+            }
+            if(ctx.type().simpleType().typeIdentifier().BOOLEAN() != null)
+            {
+                System.out.println("type Boolean");
+            }
+            if(ctx.type().simpleType().typeIdentifier().CHAR() != null)
+            {
+                System.out.println("type Char");
+            }
+        }
+        else{
+            System.out.println("Not a basic data type");
+        }
+        //todo make use of the stacks for the scope
+        return super.visitVariableDeclaration(ctx);
     }
 
     @Override
@@ -99,10 +157,38 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
         return super.visitProcedureStatement(ctx);
     }
 
+   // @Override public T visitAssignmentStatement(APascaletParser.AssignmentStatementContext ctx) { return visitChildren(ctx); }
+    @Override
+    public Integer visitAssignmentStatement(APascaletParser.AssignmentStatementContext ctx){
+        //  variable ASSIGN expession
+//        ctx.expression().
+        Object var = getVariable(ctx.variable().identifier().get(0).getText());
+//        System.out.println("Val: " + getVariable(ctx.variable().identifier().get(0).getText()) + " | " + 2);
+        if(var instanceof String){
+            //String result = evaluateExpression(ctx.expression());
+        }
+        else if(var instanceof Integer){
+//            result = evaluateExpression(ctx.expression());
+//            var = new Integer(2);
+        }
+        else if(var instanceof Boolean){
+            //    Boolean result = evaluateExpression(ctx.expression());
+
+        }
+        else if(var instanceof Character){
+            //Character result =
+
+        }
+        replaceVariableValue(ctx.variable().identifier().get(0).getText(),var);
+
+//        System.out.println("new Val: " + getVariable(ctx.variable().identifier().get(0).getText()) + " | Var: " + var);
+        return visitChildren(ctx);
+    }
+
     private int evaluateExpression(APascaletParser.ExpressionContext expression){
         int result = 0;
         String exp = expression.getText();
-
+        expression.addChild( expression);
         return result;
     }
 
@@ -112,48 +198,14 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
     }
 
     @Override
-    public Integer visitVariableDeclaration(APascaletParser.VariableDeclarationContext ctx) {
-        List<APascaletParser.IdentifierContext> tempParam = ctx.identifierList().identifier();
-        String [] param = new String[tempParam.size()];
-        for(int i = 0; i < tempParam.size(); i++)
-        {
-            param[i] = tempParam.get(i).getText();
-            System.out.println("variable name: " + param[i]);
-        }
-        if(ctx.type().simpleType() != null)
-        {
-            if(ctx.type().simpleType().typeIdentifier().INTEGER() != null)
-            {
-                System.out.println("type Integer");
-            }
-            if(ctx.type().simpleType().typeIdentifier().STRING() != null)
-            {
-                System.out.println("type String");
-            }
-            if(ctx.type().simpleType().typeIdentifier().BOOLEAN() != null)
-            {
-                System.out.println("type Boolean");
-            }
-            if(ctx.type().simpleType().typeIdentifier().CHAR() != null)
-            {
-                System.out.println("type Char");
-            }
-        }
-        else{
-            System.out.println("Not a basic data type");
-        }
-        //todo make use of the stacks for the scope
-        return super.visitVariableDeclaration(ctx);
-    }
-    @Override
     public Integer visitForStatement(APascaletParser.ForStatementContext ctx) {
         int startingValue, endingValue;
-
         return super.visitForStatement(ctx);
     }
 
     public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject)
     {
+
         boolean relBool = true;
         switch (operator){
             case "EQUAL":

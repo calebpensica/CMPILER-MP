@@ -3,26 +3,113 @@ import gen.APascaletParser;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
 
-    private HashMap<String, Object> globalVariables;
+    private HashMap<String, Object> globalVariables = new HashMap<>();
+    private Stack<HashMap<String, Object>> localVariables = new Stack<>();
 
-    private List<HashMap<String, Object>> localVariables = new ArrayList<>();
+    private Object getVariable(String key){
 
-    private boolean popStack = false;
-//    procedureStatement -> IDENT   ( PARAMLIST )
-//    Case 1                writeln ( '123123'  )
-//    Case 1                writeln ( '231' + 2 )
+        if(localVariables.peek().containsKey(key))
+            return localVariables.peek().get(key);
+        else if(globalVariables.containsKey(key))
+            return globalVariables.get(key);
+        return null;
+    }
 
-//
-//    public String getParameterType(char temp){
-//        switch(temp){
-//            case '\'': return "string";
-//                       break;
-//            case ''
-//        }
-//    }
+    @Override
+    public Integer visitProgram(APascaletParser.ProgramContext ctx) {
+
+        Object tempObject = null;
+
+//        Setting global variables
+        for(APascaletParser.VariableDeclarationPartContext varBlock : ctx.block().variableDeclarationPart()){
+            System.out.println(varBlock.getText());
+
+            for(int j = 0; j < varBlock.variableDeclaration().size(); j++) {
+                APascaletParser.VariableDeclarationContext varBlockDeclarations = varBlock.variableDeclaration(j);
+
+                for(APascaletParser.IdentifierContext ident : varBlockDeclarations.identifierList().identifier()) {
+//                    varNames.add(ident.getText());
+//                    System.out.println(ident.getText());
+                    switch (varBlockDeclarations.type().getText()) {
+                        case "integer":
+                            globalVariables.put(ident.getText(), 0);
+                            break;
+                        case "String":
+                            globalVariables.put(ident.getText(), "");
+                            break;
+                        case "boolean":
+                            globalVariables.put(ident.getText(), Boolean.FALSE);
+                            break;
+                        default:
+//                            TODO add other kinds of data type
+                    }
+                }
+
+            }
+
+        }
+        return super.visitProgram(ctx);
+    }
+
+    @Override
+    public Integer visitProcedureStatement(APascaletParser.ProcedureStatementContext ctx) {
+
+        List<APascaletParser.ActualParameterContext> tempParam = ctx.parameterList().actualParameter();
+        String[] param = new String[tempParam.size()];
+        for(int i = 0; i < tempParam.size(); i++)
+            param[i] = tempParam.get(i).getText();
+
+//        System.out.println(ctx.parameterList().getText());
+        if (ctx.identifier().getText().equalsIgnoreCase("writeln") ||
+                ctx.identifier().getText().equalsIgnoreCase("write")){
+            StringBuilder temp = new StringBuilder();
+            for (int i = 0; i < param.length; i++) {
+                for (int j = 0; j < param[i].length(); j++) {
+                    if (param[i].charAt(j) == '\'') {
+                        do {
+                            j++;
+
+                            if (param[i].charAt(j) != '\'')
+                                temp.append(param[i].charAt(j));
+
+                        } while (param[i].charAt(j) != '\'');
+
+                        // System.out.println(param[i].charAt(j) + " " + j + " " + param[i].length());
+                        if (j != param[i].length() - 1 && param[i].charAt(j) != '+')
+                            error("Syntax error | Line number - " + ctx.getStart().getLine());
+                    } else {
+                        //  todo add expressionParser
+//                        int expression = evaluateExpression(ctx.parameterList().actualParameter(i).expression());
+//                        temp.append(expression);
+                    }
+                }
+            }
+            if(ctx.identifier().getText().equalsIgnoreCase("writeln"))
+                System.out.println(temp);
+            else
+                System.out.print(temp);
+        } else {
+            System.out.println(ctx.identifier().getText());
+            //todo add other procedure statements (procedure function calls)
+        }
+        return super.visitProcedureStatement(ctx);
+    }
+
+    private int evaluateExpression(APascaletParser.ExpressionContext expression){
+        int result = 0;
+        String exp = expression.getText();
+
+        return result;
+    }
+
+    private void error(String msg){
+        System.out.println("Error: " + msg);
+        System.exit(-1);
+    }
 
     @Override
     public Integer visitVariableDeclaration(APascaletParser.VariableDeclarationContext ctx) {
@@ -53,7 +140,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
             }
         }
         else{
-           System.out.println("Not a basic data type");
+            System.out.println("Not a basic data type");
         }
         //todo make use of the stacks for the scope
         return super.visitVariableDeclaration(ctx);
@@ -96,88 +183,9 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                     if(!((Integer) firstObject <= (Integer) secondObject))
                         relBool = false;
                 break;
-                default:
-                    System.out.println("No Relational Operator");
+            default:
+                System.out.println("No Relational Operator");
         }
         return relBool;
     }
-    @Override
-    public Integer visitProcedureStatement(APascaletParser.ProcedureStatementContext ctx) {
-
-//        System.out.println(ctx.identifier().getText());
-//        ArrayList<Object> parameters = evaluateParameterList(ctx.parameterList());
-
-
-        List<APascaletParser.ActualParameterContext> tempParam = ctx.parameterList().actualParameter();
-        String[] param = new String[tempParam.size()];
-        for(int i = 0; i < tempParam.size(); i++)
-            param[i] = tempParam.get(i).getText();
-
-//        System.out.println(ctx.parameterList().getText());
-        if (ctx.identifier().getText().equalsIgnoreCase("writeln") ||
-            ctx.identifier().getText().equalsIgnoreCase("write")){
-            StringBuilder temp = new StringBuilder();
-            for (int i = 0; i < param.length; i++) {
-                for (int j = 0; j < param[i].length(); j++) {
-                    if (param[i].charAt(j) == '\'') {
-                        do {
-                            j++;
-
-                            if (param[i].charAt(j) != '\'')
-                                temp.append(param[i].charAt(j));
-
-                        } while (param[i].charAt(j) != '\'');
-
-                        // System.out.println(param[i].charAt(j) + " " + j + " " + param[i].length());
-                        if (j != param[i].length() - 1 && param[i].charAt(j) != '+')
-                            error("Syntax error | Line number - " + ctx.getStart().getLine());
-                    } else {
-                        //  todo add expressionParser
-//                        int expression = evaluateExpression(ctx.parameterList().actualParameter(i).expression());
-//                        temp.append(expression);
-                    }
-                }
-            }
-            if(ctx.identifier().getText().equalsIgnoreCase("writeln"))
-                System.out.println(temp);
-            else
-                System.out.print(temp);
-        } else {
-            System.out.println(ctx.identifier().getText());
-            //todo add other procedure statements (procedure function calls)
-        }
-        return super.visitProcedureStatement(ctx);
-    }
-
-    private int evaluateExpression(APascaletParser.ExpressionContext expression){
-        int result = 0;
-        String exp = expression.getText();
-
-        return result;
-    }
-    private ArrayList<Object> evaluateParameterList(APascaletParser.ParameterListContext parameterList) {
-
-        ArrayList<Object> temp = new ArrayList<>();
-
-        int i = 0;
-        do{
-            temp.add(evaluateActualParameter(parameterList.actualParameter(i)));
-            i++;
-        }while(parameterList.COMMA(i) != null);
-
-        return temp;
-    }
-
-    private Object evaluateActualParameter(APascaletParser.ActualParameterContext actualParameter) {
-
-
-        System.out.println("oooooooooooo: " + actualParameter.getText() + " " + visit(actualParameter));
-        return null;
-    }
-
-    private void error(String msg){
-        System.out.println("Error: " + msg);
-        System.exit(-1);
-    }
-
 }

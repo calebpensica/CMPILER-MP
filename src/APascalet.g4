@@ -50,7 +50,8 @@ constantDefinition
    ;
 
 block
-   : (labelDeclarationPart | constantDefinitionPart | typeDefinitionPart | variableDeclarationPart | procedureAndFunctionDeclarationPart | IMPLEMENTATION)* compoundStatement
+   : (labelDeclarationPart | constantDefinitionPart | typeDefinitionPart |
+      variableDeclarationPart | procedureAndFunctionDeclarationPart | IMPLEMENTATION)* compoundStatement
      ;
 
 structuredType

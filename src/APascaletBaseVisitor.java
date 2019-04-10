@@ -249,34 +249,51 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
 
     public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject)
     {
+
         boolean relBool = true;
         switch (operator){
             case "=":
-                if(firstObject != secondObject)
+                if(firstObject.equals(secondObject))
                     relBool = false;
                 break;
             case "<>":
                 if(firstObject == secondObject)
                     relBool = false;
             case "<":
-                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
-                    if((Integer) firstObject > (Integer) secondObject)
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer)) {
+                    if ((Integer) firstObject > (Integer) secondObject)
                         relBool = false;
+                }
+                else {
+                    //error
+                }
                 break;
             case ">":
-                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
-                    if((Integer) firstObject < (Integer) secondObject)
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer)) {
+                    if ((Integer) firstObject < (Integer) secondObject)
                         relBool = false;
+                }
+                else {
+                    //error
+                }
                 break;
             case ">=":
-                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
-                    if(!((Integer) firstObject >= (Integer) secondObject))
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer)) {
+                    if (!((Integer) firstObject >= (Integer) secondObject))
                         relBool = false;
+                }
+                else {
+                    //error
+                }
                 break;
             case "<=":
-                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
-                    if(!((Integer) firstObject <= (Integer) secondObject))
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer)) {
+                    if (!((Integer) firstObject <= (Integer) secondObject))
                         relBool = false;
+                }
+                else {
+                    //error
+                }
                 break;
             default:
                 System.out.println("No Relational Operator");

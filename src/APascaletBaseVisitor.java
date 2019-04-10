@@ -247,6 +247,15 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
         return super.visitForStatement(ctx);
     }
 
+    public boolean evaluateLogicalOperators(String operator, Boolean firstObject, Boolean secondObject){
+        if(operator.equalsIgnoreCase("AND"))
+            return firstObject&&secondObject;
+        else if(operator.equalsIgnoreCase("OR"))
+            return firstObject||secondObject;
+        else if(operator.equalsIgnoreCase("NOT"))
+            return !firstObject;
+    }
+
     public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject)
     {
 

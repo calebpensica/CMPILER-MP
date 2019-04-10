@@ -1,3 +1,4 @@
+ import com.sun.org.apache.xpath.internal.operations.Bool;
  import gen.APascaletParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -276,6 +277,11 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     @Override
     public Object visitFactor(APascaletParser.FactorContext ctx) {
+        if(ctx.NOT() != null)
+            if(visit(ctx.expression()) instanceof Boolean)
+                return !(Boolean)visit(ctx.expression());
+            else error("Expecting a boolean in NOT expression", ctx);
+
         if(ctx.LPAREN() != null && ctx.RPAREN() != null)
             return visit(ctx.expression());
 
@@ -361,64 +367,69 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     }
 
     private Object evaluateAdditiveExpression(String operator, Object firstObject, Object secondObject, ParserRuleContext ctx){
-        Integer result = 0;
-        String stringResult = "";
-        System.out.println();
         operator = operator.toLowerCase();
         switch(operator){
             case "+":
                 if(firstObject instanceof Integer && secondObject instanceof Integer)
                     return (Integer)firstObject + (Integer)secondObject;
-                else if(firstObject instanceof String && secondObject instanceof String) {
-                    stringResult += (String)firstObject + secondObject;
-                    return stringResult;
-                }
+                else if(firstObject instanceof String && secondObject instanceof String)
+                    return (String)firstObject + secondObject;
                 break;
             case "-":
                 if(firstObject instanceof  Integer && secondObject instanceof  Integer)
                     return (Integer)firstObject - (Integer)secondObject;
-                else
-                    error("Additive expression error", ctx);
                 break;
 
             case "or":
                 if(firstObject instanceof  Boolean && secondObject instanceof  Boolean)
                     return (Boolean)firstObject || (Boolean)secondObject;
-                else
-                    error("Additive expression error", ctx);
                 break;
 
         }
-
+        error("Additive expression error", ctx);
         return null;
     }
 
     @Override
     public Object visitTerm(APascaletParser.TermContext ctx) {
         if(ctx.multiplicativeoperator()!=null){
-            return evaluateMultiplicativeOperator(ctx.multiplicativeoperator().getText(), ctx.signedFactor(), ctx.term());
+            return evaluateMultiplicativeOperator(ctx.multiplicativeoperator().getText(),
+                                                  ctx.signedFactor(), ctx.term(), ctx);
         }
         return visitChildren(ctx);
     }
 
 
-    private int evaluateMultiplicativeOperator(String operator, Object firstObject, Object secondObject){
-        int result = 0;
+    private Object evaluateMultiplicativeOperator(String operator, Object firstObject, Object secondObject,
+                                                  APascaletParser.TermContext ctx){
+
+        //        todo typechecking
         operator = operator.toLowerCase();
         switch(operator){
             case "*":
-                result += (Integer)firstObject * (Integer)secondObject;
+                if(firstObject instanceof Integer && secondObject instanceof Integer)
+                    return (Integer)firstObject * (Integer)secondObject;
                 break;
             case "/":
-                result += (Integer)firstObject / (Integer)secondObject;
+                if(firstObject instanceof Integer && secondObject instanceof Integer)
+                    return (Integer)firstObject / (Integer)secondObject;
                 break;
             case "%":
-                result += (Integer)firstObject % (Integer)secondObject;
+                if(firstObject instanceof  Integer && secondObject instanceof  Integer)
+                    return (Integer)firstObject % (Integer)secondObject;
+                break;
+
+            case "and":
+                if(firstObject instanceof  Boolean && secondObject instanceof  Boolean)
+                    return (Boolean)firstObject && (Boolean)secondObject;
                 break;
 
         }
-        return result;
+
+        error("Multiplicative expression error", ctx);
+        return null;
     }
+
     @Override
     public Object visitUnsignedNumber(APascaletParser.UnsignedNumberContext ctx) {
         return new Integer(ctx.getText());

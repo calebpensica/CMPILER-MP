@@ -283,9 +283,9 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         if(getVariable(ctx.variable().identifier().getText()) == null)
             error("", ctx);
 
-        replaceVariableValue(ctx.variable().identifier().getText(), visitExpression(ctx.expression()));
+        replaceVariableValue(ctx.variable().identifier().getText(), visit(ctx.expression()));
 
-        return visitChildren(ctx);
+        return visit(ctx);
     }
 
     @Override

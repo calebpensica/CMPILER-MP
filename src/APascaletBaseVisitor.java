@@ -432,8 +432,20 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         //check up to three letters
         if(ctx.identifier().getText().length() <= 3)
         {
-            if(ctx.constant().string() != null){
+            HashMap<String, Object> localConstant = new HashMap<>();
 
+            if(ctx.constant().sign() != null || ctx.constant().unsignedNumber() != null)
+            {
+                final int x = Integer.parseInt(ctx.constant().getText());
+                localConstant.put(ctx.identifier().getText(), x);
+                localVariables.push(localConstant);
+            }
+
+            else if(ctx.constant().string() != null)
+            {
+                final String x = ctx.constant().getText();
+                localConstant.put(ctx.identifier().getText(), x);
+                localVariables.push(localConstant);
             }
 
         }

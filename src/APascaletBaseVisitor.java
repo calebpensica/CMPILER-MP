@@ -512,9 +512,11 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             condition = (Boolean) visit(ctx.expression());
             if(condition){
                 visit(ctx.statement(0));
+                return null;
             }
             else if(ctx.ELSE() != null && !condition){
                 visit(ctx.statement(1));
+                return null;
             }
         }
         else

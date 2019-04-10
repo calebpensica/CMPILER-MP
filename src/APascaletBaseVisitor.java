@@ -295,12 +295,17 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     }
 
 
-    private int evaluateAdditiveExpression(String operator, Object firstObject, Object secondObject){
-        int result = 0;
-
+    private Object evaluateAdditiveExpression(String operator, Object firstObject, Object secondObject){
+        Integer result = 0;
+        String stringResult = "";
         switch(operator){
             case "+":
-                result += (Integer)firstObject + (Integer)secondObject;
+                if(firstObject instanceof Integer && secondObject instanceof Integer)
+                    result += (Integer)firstObject + (Integer)secondObject;
+                else if(firstObject instanceof String && secondObject instanceof String) {
+                    stringResult += (String)firstObject + secondObject;
+                    return stringResult;
+                }
                 break;
             case "-":
                 result += (Integer)firstObject - (Integer)secondObject;

@@ -1,4 +1,4 @@
-import gen.APascaletParser;
+ import gen.APascaletParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.HashMap;
@@ -201,49 +201,23 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     public Object visitProcedureStatement(APascaletParser.ProcedureStatementContext ctx) {
 
         List<APascaletParser.ActualParameterContext> tempParam = ctx.parameterList().actualParameter();
-        String[] param = new String[tempParam.size()];
-        for(int i = 0; i < tempParam.size(); i++)
-            param[i] = tempParam.get(i).getText();
 
-//        System.out.println(ctx.parameterList().getText());
         if (ctx.identifier().getText().equalsIgnoreCase("writeln") ||
-                ctx.identifier().getText().equalsIgnoreCase("write")){
+            ctx.identifier().getText().equalsIgnoreCase("write")){
+
             StringBuilder temp = new StringBuilder();
-            for (int i = 0; i < param.length; i++) {
-                if (param[i].charAt(0) == '\'') {
-                    for (int j = 0; j < param[i].length(); j++) {
-                        do {
-                            j++;
-
-                            if (param[i].charAt(j) != '\'')
-                                temp.append(param[i].charAt(j));
-
-                        } while (param[i].charAt(j) != '\'');
-
-                        // System.out.println(param[i].charAt(j) + " " + j + " " + param[i].length());
-                        if (j != param[i].length() - 1 && param[i].charAt(j) != '+')
-                            error("Syntax error", ctx);
-                    }
-                } else {
-//                          todo add expressionParser
-//                        int expression = evaluateExpression(ctx.parameterList().actualParameter(i).expression());
+            for (int i = 0; i < tempParam.size(); i++)
                     temp.append(visitExpression(tempParam.get(i).expression()));
-                }
-            }
-            if(ctx.identifier().getText().equalsIgnoreCase("writeln"))
-                System.out.println(temp);
-            else
-                System.out.print(temp);
-        }
 
-        else if(functionList.containsKey(ctx.identifier().getText().toLowerCase()))
-        {
+            System.out.println(temp + (ctx.identifier().getText().equalsIgnoreCase("writeln") ? "\n" : ""));
+
+        } else if(functionList.containsKey(ctx.identifier().getText().toLowerCase())){
             executeFunction(functionList.get(ctx.identifier().getText().toLowerCase()));
-        }
-        else {
+        } else {
             System.out.println(ctx.identifier().getText());
             //todo add other procedure statements (procedure function calls)
         }
+
         return super.visitProcedureStatement(ctx);
     }
 
@@ -300,25 +274,11 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         return visitChildren(ctx);
     }
 
-
-    public boolean evaluateLogicalOperators(String operator, Boolean firstObject, Boolean secondObject){
-        if(operator.equalsIgnoreCase("AND"))
-            return firstObject&&secondObject;
-        else if(operator.equalsIgnoreCase("OR"))
-            return firstObject||secondObject;
-        else // if(operator.equalsIgnoreCase("NOT"))
-            return !firstObject;
-    }
-
-    private int evaluateExpression(APascaletParser.ExpressionContext expression){
-        int result = 0;
-        String exp = expression.getText();
-        expression.addChild( expression);
-        return result;
-    }
-
     @Override
     public Object visitFactor(APascaletParser.FactorContext ctx) {
+        if(ctx.LPAREN() != null && ctx.RPAREN() != null)
+            return visit(ctx.expression());
+
         return super.visitFactor(ctx);
     }
 
@@ -327,20 +287,20 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         System.exit(-1);
     }
 
+
     @Override
     public Object visitForStatement(APascaletParser.ForStatementContext ctx) {
         int startingValue, endingValue;
         return super.visitForStatement(ctx);
     }
 
-    public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject)
-    {
-
+    public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject){
         boolean relBool = true;
         operator = operator.toLowerCase();
+
         switch (operator){
             case "=":
-                if(firstObject.equals(secondObject))
+                if(!firstObject.equals(secondObject))
                     relBool = false;
                 break;
             case "<>":
@@ -393,7 +353,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
 
         if(ctx.additiveoperator()!=null){
-            evaluateAdditiveExpression(ctx.additiveoperator().getText(), ctx.term(),ctx.simpleExpression(), ctx);
+            return evaluateAdditiveExpression(ctx.additiveoperator().getText(), visit(ctx.term()),
+                                              visit(ctx.simpleExpression()), ctx);
         }
 
         return visitChildren(ctx);
@@ -407,7 +368,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         switch(operator){
             case "+":
                 if(firstObject instanceof Integer && secondObject instanceof Integer)
-                    result += (Integer)firstObject + (Integer)secondObject;
+                    return (Integer)firstObject + (Integer)secondObject;
                 else if(firstObject instanceof String && secondObject instanceof String) {
                     stringResult += (String)firstObject + secondObject;
                     return stringResult;
@@ -415,7 +376,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 break;
             case "-":
                 if(firstObject instanceof  Integer && secondObject instanceof  Integer)
-                    result += (Integer)firstObject - (Integer)secondObject;
+                    return (Integer)firstObject - (Integer)secondObject;
                 else
                     error("Additive expression error", ctx);
                 break;
@@ -429,13 +390,13 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         }
 
-        return result;
+        return null;
     }
 
     @Override
     public Object visitTerm(APascaletParser.TermContext ctx) {
         if(ctx.multiplicativeoperator()!=null){
-            evaluateMultiplicativeOperator(ctx.multiplicativeoperator().getText(), ctx.signedFactor(), ctx.term());
+            return evaluateMultiplicativeOperator(ctx.multiplicativeoperator().getText(), ctx.signedFactor(), ctx.term());
         }
         return visitChildren(ctx);
     }
@@ -465,7 +426,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     @Override
     public Object visitString(APascaletParser.StringContext ctx) {
-        return super.visitString(ctx);
+        return ctx.getText().replaceAll("\'", "");
     }
 
     @Override

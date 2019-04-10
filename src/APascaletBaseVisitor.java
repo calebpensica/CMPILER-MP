@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
-
+    private HashMap<contextParameters, String> functionList = new HashMap<>();
     private HashMap<String, Object> globalVariables = new HashMap<>();
     private Stack<HashMap<String, Object>> localVariables = new Stack<>();
 
@@ -34,7 +34,43 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
         return false;
     }
 
+    @Override
+    public Integer visitProcedureDeclaration(APascaletParser.ProcedureDeclarationContext ctx) {
+        contextParameters cp = new contextParameters();
+        String parameterList [];
+        //add to list
+        if(ctx.formalParameterList() != null)
+        {
+            parameterList = new String[ctx.formalParameterList().formalParameterSection().size()];
+            for(int i = 0; i < ctx.formalParameterList().formalParameterSection().size(); i++)
+            {
+                parameterList[i] = ctx.formalParameterList().formalParameterSection(i).getText();
+            }
+            cp.setParameters(parameterList);
+        }
+        cp.setCurrentContext(ctx.block());
+        functionList.put(cp, ctx.identifier().getText());
+        return super.visitProcedureDeclaration(ctx);
+    }
 
+    @Override
+    public Integer visitFunctionDeclaration(APascaletParser.FunctionDeclarationContext ctx) {
+        contextParameters cp = new contextParameters();
+        String parameterList [];
+        //add to list
+        if(ctx.formalParameterList() != null)
+        {
+            parameterList = new String[ctx.formalParameterList().formalParameterSection().size()];
+            for(int i = 0; i < ctx.formalParameterList().formalParameterSection().size(); i++)
+            {
+                parameterList[i] = ctx.formalParameterList().formalParameterSection(i).getText();
+            }
+            cp.setParameters(parameterList);
+        }
+        cp.setCurrentContext(ctx.block());
+        functionList.put(cp, ctx.identifier().getText());
+        return super.visitFunctionDeclaration(ctx);
+    }
     @Override
     public Integer visitProgram(APascaletParser.ProgramContext ctx) {
 
@@ -150,13 +186,21 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                 System.out.println(temp);
             else
                 System.out.print(temp);
-        } else {
+        }
+        else if(functionList.containsKey(ctx.identifier()))
+        {
+           // executeFunction(functionList.get(ctx.identifier()));
+        }
+        else {
             System.out.println(ctx.identifier().getText());
             //todo add other procedure statements (procedure function calls)
         }
         return super.visitProcedureStatement(ctx);
     }
+    public void executeFunction(contextParameters currentContextParameter)
+    {
 
+    }
    // @Override public T visitAssignmentStatement(APascaletParser.AssignmentStatementContext ctx) { return visitChildren(ctx); }
     @Override
     public Integer visitAssignmentStatement(APascaletParser.AssignmentStatementContext ctx){
@@ -205,32 +249,31 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
 
     public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject)
     {
-
         boolean relBool = true;
         switch (operator){
-            case "EQUAL":
+            case "=":
                 if(firstObject != secondObject)
                     relBool = false;
                 break;
-            case "NOT_EQUAL":
+            case "<>":
                 if(firstObject == secondObject)
                     relBool = false;
-            case "LT":
+            case "<":
                 if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
                     if((Integer) firstObject > (Integer) secondObject)
                         relBool = false;
                 break;
-            case "GT":
+            case ">":
                 if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
                     if((Integer) firstObject < (Integer) secondObject)
                         relBool = false;
                 break;
-            case "GE":
+            case ">=":
                 if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
                     if(!((Integer) firstObject >= (Integer) secondObject))
                         relBool = false;
                 break;
-            case "LE":
+            case "<=":
                 if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
                     if(!((Integer) firstObject <= (Integer) secondObject))
                         relBool = false;

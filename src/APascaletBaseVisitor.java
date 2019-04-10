@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
-    private HashMap<contextParameters, String> functionList = new HashMap<>();
+    private HashMap<String, contextParameters> functionList = new HashMap<>();
     private HashMap<String, Object> globalVariables = new HashMap<>();
     private Stack<HashMap<String, Object>> localVariables = new Stack<>();
 
@@ -49,7 +49,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
             cp.setParameters(parameterList);
         }
         cp.setCurrentContext(ctx.block());
-        functionList.put(cp, ctx.identifier().getText());
+        functionList.put(ctx.identifier().getText(), cp);
         return super.visitProcedureDeclaration(ctx);
     }
 
@@ -68,7 +68,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
             cp.setParameters(parameterList);
         }
         cp.setCurrentContext(ctx.block());
-        functionList.put(cp, ctx.identifier().getText());
+        functionList.put(ctx.identifier().getText(), cp);
         return super.visitFunctionDeclaration(ctx);
     }
     @Override
@@ -114,8 +114,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
 
 
 
-    @Override
-    public Integer visitVariableDeclaration(APascaletParser.VariableDeclarationContext ctx) {
+    public void variableDeclaration(APascaletParser.VariableDeclarationContext ctx,  HashMap<String, Object> variables) {
         List<APascaletParser.IdentifierContext> tempParam = ctx.identifierList().identifier();
         String [] param = new String[tempParam.size()];
         for(int i = 0; i < tempParam.size(); i++)
@@ -128,25 +127,41 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
             if(ctx.type().simpleType().typeIdentifier().INTEGER() != null)
             {
                 System.out.println("type Integer");
+                for(int x = 0; x < tempParam.size(); x++)
+                {
+                    variables.put(param[x], new Integer(0));
+                }
+
             }
             if(ctx.type().simpleType().typeIdentifier().STRING() != null)
             {
                 System.out.println("type String");
+                for(int x = 0; x < tempParam.size(); x++)
+                {
+                    variables.put(param[x], "");
+                }
             }
             if(ctx.type().simpleType().typeIdentifier().BOOLEAN() != null)
             {
                 System.out.println("type Boolean");
+                for(int x = 0; x < tempParam.size(); x++)
+                {
+                    variables.put(param[x], false);
+                }
             }
             if(ctx.type().simpleType().typeIdentifier().CHAR() != null)
             {
                 System.out.println("type Char");
+                for(int x = 0; x < tempParam.size(); x++)
+                {
+                    variables.put(param[x], new Character(' '));
+                }
             }
         }
         else{
             System.out.println("Not a basic data type");
         }
         //todo make use of the stacks for the scope
-        return super.visitVariableDeclaration(ctx);
     }
 
     @Override
@@ -187,9 +202,9 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
             else
                 System.out.print(temp);
         }
-        else if(functionList.containsKey(ctx.identifier()))
+        else if(functionList.containsKey(ctx.identifier().getText()))
         {
-           // executeFunction(functionList.get(ctx.identifier()));
+            executeFunction(functionList.get(ctx.identifier().getText()));
         }
         else {
             System.out.println(ctx.identifier().getText());
@@ -199,7 +214,22 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
     }
     public void executeFunction(contextParameters currentContextParameter)
     {
-
+        HashMap<String, Object> variables = new HashMap<>();
+        System.out.println(currentContextParameter.getCurrentContext().getText());
+        if(currentContextParameter.getCurrentContext().variableDeclarationPart() != null)
+        {
+            List<APascaletParser.VariableDeclarationPartContext> varDecPart = currentContextParameter.getCurrentContext().variableDeclarationPart();
+            for(int i = 0; i < varDecPart.size(); i++)
+            {
+                for(int x = 0; x < varDecPart.get(i).variableDeclaration().size(); x++)
+                {
+                    variableDeclaration(varDecPart.get(i).variableDeclaration().get(x), variables);
+                }
+            }
+            localVariables.push(variables);
+            visit(currentContextParameter.getCurrentContext().compoundStatement());
+            localVariables.pop();
+        }
     }
    // @Override public T visitAssignmentStatement(APascaletParser.AssignmentStatementContext ctx) { return visitChildren(ctx); }
     @Override
@@ -265,7 +295,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    error("Syntax error | Line number - " + ctx.getStart().getLine());
+                    //error("Syntax error | Line number - " + ctx.getStart().getLine());
                 }
                 break;
             case ">":
@@ -274,7 +304,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    error("Syntax error | Line number - " + ctx.getStart().getLine());
+                    //error("Syntax error | Line number - " + ctx.getStart().getLine());
                 }
                 break;
             case ">=":
@@ -283,7 +313,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    error("Syntax error | Line number - " + ctx.getStart().getLine());
+                    //error("Syntax error | Line number - " + ctx.getStart().getLine());
                 }
                 break;
             case "<=":
@@ -292,7 +322,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    error("Syntax error | Line number - " + ctx.getStart().getLine());
+                    //error("Syntax error | Line number - " + ctx.getStart().getLine());
                 }
                 break;
             default:

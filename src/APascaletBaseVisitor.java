@@ -77,6 +77,17 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         Object tempObject = null;
 
+//        typeDefinition
+//        : identifier EQUAL (type | functionType | procedureType)
+
+        for(APascaletParser.TypeDefinitionPartContext typeBlock : ctx.block().typeDefinitionPart()){
+            for(int i = 0; i < typeBlock.typeDefinition().size(); i++){
+                APascaletParser.TypeDefinitionContext typeBlockDeclarations = typeBlock.typeDefinition(i);
+                initializeArray(typeBlock.typeDefinition(i));
+
+            }
+        }
+
 //        Setting global variables
         for(APascaletParser.VariableDeclarationPartContext varBlock : ctx.block().variableDeclarationPart()){
             System.out.println(varBlock.getText());
@@ -94,6 +105,21 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         }
         return super.visitProgram(ctx);
+    }
+    public void initializeArray(APascaletParser.TypeDefinitionContext typeDefinitionContext){
+
+//        type
+//                temperature = array [-10 .. 50] of real;
+//        var
+//        day_temp, night_temp: temperature;
+
+//        typeDefinition
+//        : identifier EQUAL (type | functionType | procedureType)
+
+        String arrayName = typeDefinitionContext.identifier().getText();
+        if(!typeDefinitionContext.type().getText().equalsIgnoreCase("array")){
+
+        }
     }
 
     public void setVariableDataType(String dataType, APascaletParser.IdentifierContext ident){

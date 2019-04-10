@@ -253,7 +253,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
         boolean relBool = true;
         switch (operator){
             case "=":
-                if(firstObject.equals(secondObject))
+                if(!firstObject.equals(secondObject))
                     relBool = false;
                 break;
             case "<>":
@@ -265,7 +265,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    //error
+                    error("Syntax error | Line number - " + ctx.getStart().getLine());
                 }
                 break;
             case ">":
@@ -274,7 +274,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    //error
+                    error("Syntax error | Line number - " + ctx.getStart().getLine());
                 }
                 break;
             case ">=":
@@ -283,7 +283,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    //error
+                    error("Syntax error | Line number - " + ctx.getStart().getLine());
                 }
                 break;
             case "<=":
@@ -292,7 +292,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Integer> {
                         relBool = false;
                 }
                 else {
-                    //error
+                    error("Syntax error | Line number - " + ctx.getStart().getLine());
                 }
                 break;
             default:

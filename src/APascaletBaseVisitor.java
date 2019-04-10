@@ -29,11 +29,11 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     private boolean replaceVariableValue(String key, Object newValue){
 
         if (!localVariables.empty() && localVariables.peek().containsKey(key)){
-            localVariables.peek().put(key.toLowerCase(),newValue); //unsure
+            localVariables.peek().put(key,newValue); //unsure
             return true;
         }
         else if (globalVariables.containsKey(key)){
-            globalVariables.put(key.toLowerCase(), newValue);
+            globalVariables.put(key, newValue);
             return true;
         }
 
@@ -289,7 +289,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         if(getVariable(ctx.variable().identifier().getText()) == null)
             error("Variable does not exist", ctx);
 
-        replaceVariableValue(ctx.variable().identifier().getText(), visit(ctx.expression()));
+        replaceVariableValue(ctx.variable().identifier().getText().toLowerCase(), visit(ctx.expression()));
 
         return null;
     }

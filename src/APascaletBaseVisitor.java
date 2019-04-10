@@ -334,8 +334,10 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 else System.out.println((ctx.MINUS() != null || ctx.PLUS() != null) + " sasad " +
                             (visit(ctx.factor()) instanceof Integer));
             } else error("Expecting integer in minus unary operator", ctx);
-
-        return visit(ctx.factor());
+            if(ctx.factor() != null)
+                return visit(ctx.factor());
+            else
+                return "";
     }
 
     @Override

@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Stack;
 
 public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
@@ -236,9 +237,37 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         } else if(functionList.containsKey(ctx.identifier().getText().toLowerCase())){
             executeFunction(functionList.get(ctx.identifier().getText().toLowerCase()));
-        } else {
-            System.out.println(ctx.identifier().getText());
+        } else if(ctx.identifier().getText().equalsIgnoreCase("readln")){
+            Scanner sc = new Scanner(System.in);
+            String input;
+            for(int i = 0; i < ctx.parameterList().actualParameter().size(); i++){
+                System.out.println("Enter input:");
+                input = sc.nextLine();
+                System.out.println("Input: " + input);
+                Object x = getVariable(ctx.parameterList().actualParameter().get(i).getText());
+                if(x!=null){
+                    if(x instanceof Integer){
+                        Integer intInput = 0;
+                        try {
+                            intInput = Integer.parseInt(input); //todo check for error
+                        } catch (NumberFormatException e){
+                            error("Input mismatch. ", ctx);
+                        }
+                        replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), intInput);
+                    }else if(x instanceof String){
+                        replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), input);
+                    }else if(x instanceof Character){
+                        Character charInput = input.toCharArray()[0];
+                       replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), charInput);
+                    } else {
+                        error("Variable does not exist.",ctx);
+                    }
+                }
+            }
             //todo add other procedure statements (procedure function calls)
+        }
+        else {
+            //error
         }
 
         return super.visitProcedureStatement(ctx);

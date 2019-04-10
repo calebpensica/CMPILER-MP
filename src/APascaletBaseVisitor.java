@@ -130,7 +130,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 System.out.println("type Integer");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
-                    variables.put(param[x], new Integer(0));
+                    variables.put(param[x], 0);
                 }
             }
             if(ctx.type().simpleType().typeIdentifier().STRING() != null)
@@ -154,7 +154,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 System.out.println("type Char");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
-                    variables.put(param[x], new Character(' '));
+                    variables.put(param[x], ' ');
                 }
             }
         }
@@ -354,15 +354,16 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
 
         if(ctx.additiveoperator()!=null){
-            evaluateAdditiveExpression(ctx.additiveoperator().getText(), ctx.term(),ctx.simpleExpression());
+            evaluateAdditiveExpression(ctx.additiveoperator().getText(), ctx.term(),ctx.simpleExpression(), ctx);
         }
 
         return visitChildren(ctx);
     }
 
-    private Object evaluateAdditiveExpression(String operator, Object firstObject, Object secondObject){
+    private Object evaluateAdditiveExpression(String operator, Object firstObject, Object secondObject, ParserRuleContext ctx){
         Integer result = 0;
         String stringResult = "";
+        System.out.println();
         switch(operator){
             case "+":
                 if(firstObject instanceof Integer && secondObject instanceof Integer)
@@ -376,7 +377,14 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 if(firstObject instanceof  Integer && secondObject instanceof  Integer)
                     result += (Integer)firstObject - (Integer)secondObject;
                 else
-                    error("Additive expression error", null);
+                    error("Additive expression error", ctx);
+                break;
+
+            case "or":
+                if(firstObject instanceof  Boolean && secondObject instanceof  Boolean)
+                    return (Boolean)firstObject || (Boolean)secondObject;
+                else
+                    error("Additive expression error", ctx);
                 break;
 
         }
@@ -424,4 +432,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         return getVariable(ctx.identifier().getText());
     }
 
+    @Override
+    public Object visitBool(APascaletParser.BoolContext ctx) {
+        return new Boolean(ctx.getText());
+    }
 }

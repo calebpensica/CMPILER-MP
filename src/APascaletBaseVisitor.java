@@ -266,12 +266,13 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
 
         if(ctx.relationaloperator() != null && visit(ctx.expression()) == null) // todo @caleb with relation op but 2nd var is not valid
-            error("", ctx);
+            error("Invalid operator", ctx);
 
         if(ctx.relationaloperator() != null)
             return evaluateRelationalOperators(ctx.relationaloperator().getText(),
                     visit(ctx.simpleExpression()),
-                    visit(ctx.expression()));
+                    visit(ctx.expression()),
+                    ctx);
 
         else return visit(ctx.simpleExpression());
     }
@@ -281,7 +282,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     public Object visitAssignmentStatement(APascaletParser.AssignmentStatementContext ctx){
         //  variable ASSIGN expression
         if(getVariable(ctx.variable().identifier().getText()) == null)
-            error("", ctx);
+            error("Variable does not exist", ctx);
 
         replaceVariableValue(ctx.variable().identifier().getText(), visit(ctx.expression()));
 
@@ -328,7 +329,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         return super.visitForStatement(ctx);
     }
 
-    public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject){
+    public boolean evaluateRelationalOperators(String operator, Object firstObject, Object secondObject, APascaletParser.ExpressionContext ctx){
         boolean relBool = true;
         operator = operator.toLowerCase();
 
@@ -346,7 +347,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                         relBool = false;
                 }
                 else {
-                    //error
+                    error("Invalid expression",ctx);
                 }
                 break;
             case ">":
@@ -355,7 +356,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                         relBool = false;
                 }
                 else {
-                    //error
+
+                    error("Invalid expression",ctx);
                 }
                 break;
             case ">=":
@@ -364,7 +366,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                         relBool = false;
                 }
                 else {
-                    //error
+
+                    error("Invalid expression",ctx);
                 }
                 break;
             case "<=":
@@ -373,7 +376,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                         relBool = false;
                 }
                 else {
-                    //error
+                    error("Invalid expression",ctx);
                 }
                 break;
             default:

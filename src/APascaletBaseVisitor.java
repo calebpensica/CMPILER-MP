@@ -256,9 +256,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     @Override
     public Object visitTerm(APascaletParser.TermContext ctx) {
         if(ctx.multiplicativeoperator()!=null){
-            //evaluateMultiplicativeOperator(ctx.multiplicativeoperator(),)
+            evaluateMultiplicativeOperator(ctx.multiplicativeoperator().getText(), ctx.signedFactor(), ctx.term());
         }
-
         return visitChildren(ctx);
     }
 
@@ -301,6 +300,10 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         switch(operator){
             case "+":
+                result += (Integer)firstObject + (Integer)secondObject;
+                break;
+            case "-":
+                result += (Integer)firstObject - (Integer)secondObject;
                 break;
 
         }
@@ -308,9 +311,20 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         return result;
     }
 
-    private int evaluateMultiplicativeOperator(String operator, Integer firstObject, Integer secondObject){
+    private int evaluateMultiplicativeOperator(String operator, Object firstObject, Object secondObject){
         int result = 0;
+        switch(operator){
+            case "*":
+                result += (Integer)firstObject * (Integer)secondObject;
+                break;
+            case "/":
+                result += (Integer)firstObject / (Integer)secondObject;
+                break;
+            case "%":
+                result += (Integer)firstObject % (Integer)secondObject;
+                break;
 
+        }
         return result;
     }
 

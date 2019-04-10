@@ -1,5 +1,5 @@
 import gen.APascaletParser;
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +12,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     private Object getVariable(String key) {
 
+        key = key.toLowerCase();
         if (!localVariables.empty() && localVariables.peek().containsKey(key))
             return localVariables.peek().get(key);
         else if (globalVariables.containsKey(key))
@@ -22,11 +23,11 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     private boolean replaceVariableValue(String key, Object newValue){
 
         if (!localVariables.empty() && localVariables.peek().containsKey(key)){
-             localVariables.peek().put(key,newValue); //unsure
+             localVariables.peek().put(key.toLowerCase(),newValue); //unsure
             return true;
         }
         else if (globalVariables.containsKey(key)){
-            globalVariables.put(key,newValue);
+            globalVariables.put(key.toLowerCase(), newValue);
             return true;
         }
 
@@ -49,7 +50,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             cp.setParameters(parameterList);
         }
         cp.setCurrentContext(ctx.block());
-        functionList.put(ctx.identifier().getText(), cp);
+        functionList.put(ctx.identifier().getText().toLowerCase(), cp);
         return super.visitProcedureDeclaration(ctx);
     }
 
@@ -68,7 +69,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             cp.setParameters(parameterList);
         }
         cp.setCurrentContext(ctx.block());
-        functionList.put(ctx.identifier().getText(), cp);
+        functionList.put(ctx.identifier().getText().toLowerCase(), cp);
         return super.visitFunctionDeclaration(ctx);
     }
     @Override
@@ -98,13 +99,13 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     public void setVariableDataType(String dataType, APascaletParser.IdentifierContext ident){
         switch (dataType) {
             case "integer":
-                globalVariables.put(ident.getText(), 0);
+                globalVariables.put(ident.getText().toLowerCase(), 0);
                 break;
             case "String":
-                globalVariables.put(ident.getText(), "");
+                globalVariables.put(ident.getText().toLowerCase(), "");
                 break;
             case "boolean":
-                globalVariables.put(ident.getText(), Boolean.FALSE);
+                globalVariables.put(ident.getText().toLowerCase(), Boolean.FALSE);
                 break;
             default:
 //                            TODO add other kinds of data type
@@ -188,7 +189,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
                         // System.out.println(param[i].charAt(j) + " " + j + " " + param[i].length());
                         if (j != param[i].length() - 1 && param[i].charAt(j) != '+')
-                            error("Syntax error", ctx.getStart());
+                            error("Syntax error", ctx);
                     }
                 } else {
 //                          todo add expressionParser
@@ -202,9 +203,9 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 System.out.print(temp);
         }
 
-        else if(functionList.containsKey(ctx.identifier().getText()))
+        else if(functionList.containsKey(ctx.identifier().getText().toLowerCase()))
         {
-             executeFunction(functionList.get(ctx.identifier().getText()));
+             executeFunction(functionList.get(ctx.identifier().getText().toLowerCase()));
         }
         else {
             System.out.println(ctx.identifier().getText());
@@ -232,13 +233,13 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     @Override
     public Object visitExpression(APascaletParser.ExpressionContext ctx) {
 
-        if(ctx.relationaloperator() != null && visit(ctx.expression()) == null)
-            error("", ctx.getStart());
+        if(ctx.relationaloperator() != null && visit(ctx.expression()) == null) // todo @caleb with relation op but 2nd var is not valid
+            error("", ctx);
 
         if(ctx.relationaloperator() != null)
-            return String.valueOf(evaluateRelationalOperators(ctx.relationaloperator().getText(),
+            return evaluateRelationalOperators(ctx.relationaloperator().getText(),
                     visit(ctx.simpleExpression()),
-                    visit(ctx.expression())));
+                    visit(ctx.expression()));
 
         else return visit(ctx.simpleExpression());
     }
@@ -251,31 +252,21 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     @Override
     public Object visitAssignmentStatement(APascaletParser.AssignmentStatementContext ctx){
         //  variable ASSIGN expression
-        Object var = getVariable(ctx.variable().identifier().getText());
-//        System.out.println("Val: " + getVariable(ctx.variable().identifier().get(0).getText()) + " | " + 2);
-        if(var instanceof String){
-            //String result = evaluateExpression(ctx.expression());
-        }
-        else if(var instanceof Integer){
-//            result = evaluateExpression(ctx.expression());
-//            var = new Integer(2);
-        }
-        else if(var instanceof Boolean){
-            //    Boolean result = evaluateExpression(ctx.expression());
+       if(getVariable(ctx.variable().identifier().getText()) == null)
+           error("", ctx);
 
-        }
-        else if(var instanceof Character){
+        /*if(var instanceof Character){
             //Character result =
 
-        }
-        replaceVariableValue(ctx.variable().identifier().getText(),var);
+        }*/
+        replaceVariableValue(ctx.variable().identifier().getText(), visitExpression(ctx.expression()));
 
 //        System.out.println("new Val: " + getVariable(ctx.variable().identifier().get(0).getText()) + " | Var: " + var);
         return visitChildren(ctx);
     }
 
 
-    
+
 
     public boolean evaluateLogicalOperators(String operator, Boolean firstObject, Boolean secondObject){
         if(operator.equalsIgnoreCase("AND"))
@@ -293,8 +284,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         return result;
     }
 
-    private void error(String msg, Token start){
-        System.out.println("Error: " + msg + " | Line number - " + start.getLine());
+    private void error(String msg, ParserRuleContext ctx){
+        System.out.println("Error: " + msg + " | Line number - " + ctx.getStart().getLine());
         System.exit(-1);
     }
 

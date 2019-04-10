@@ -8,6 +8,7 @@ public class contextParameters {
     public contextParameters(String[] parameters, APascaletParser.BlockContext currentContext) {
         this.parameters = parameters;
         this.currentContext = currentContext;
+        this.functionContext = null;
     }
 
     public String[] getParameters() {
@@ -28,5 +29,15 @@ public class contextParameters {
 
     private String parameters [];
     private APascaletParser.BlockContext currentContext;
+
+    public APascaletParser.FunctionDeclarationContext getFunctionContext() {
+        return functionContext;
+    }
+
+    public void setFunctionContext(APascaletParser.FunctionDeclarationContext functionContext) {
+        this.functionContext = functionContext;
+    }
+
+    private APascaletParser.FunctionDeclarationContext functionContext;
 
 }

@@ -69,6 +69,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             cp.setParameters(parameterList);
         }
         cp.setCurrentContext(ctx.block());
+        cp.setFunctionContext(ctx);
         functionList.put(ctx.identifier().getText().toLowerCase(), cp);
         return super.visitFunctionDeclaration(ctx);
     }
@@ -123,6 +124,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     }
 
     public void setVariableDataType(String dataType, APascaletParser.IdentifierContext ident){
+        dataType = dataType.toLowerCase();
         switch (dataType) {
             case "integer":
                 globalVariables.put(ident.getText().toLowerCase(), 0);
@@ -156,7 +158,12 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 System.out.println("type Integer");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
-                    variables.put(param[x], 0);
+                    if(!variables.containsKey(param[x]))
+                        variables.put(param[x], 0);
+                    else{
+                        error("Variable assignment error", ctx);
+                        return;
+                    }
                 }
             }
             if(ctx.type().simpleType().typeIdentifier().STRING() != null)
@@ -250,6 +257,11 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                     variableDeclaration(varDecPart.get(i).variableDeclaration().get(x), variables);
                 }
             }
+            //push variable name check if ctx is current context then pwede ipush
+            if(currentContextParameter.getFunctionContext() != null)
+            {
+                variables.put(currentContextParameter.getFunctionContext().identifier().getText(), currentContextParameter.getFunctionContext().resultType().typeIdentifier().getText());
+            }
             localVariables.push(variables);
             visit(currentContextParameter.getCurrentContext().compoundStatement());
             localVariables.pop();
@@ -325,6 +337,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     {
 
         boolean relBool = true;
+        operator = operator.toLowerCase();
         switch (operator){
             case "=":
                 if(firstObject.equals(secondObject))
@@ -390,6 +403,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         Integer result = 0;
         String stringResult = "";
         System.out.println();
+        operator = operator.toLowerCase();
         switch(operator){
             case "+":
                 if(firstObject instanceof Integer && secondObject instanceof Integer)
@@ -429,6 +443,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     private int evaluateMultiplicativeOperator(String operator, Object firstObject, Object secondObject){
         int result = 0;
+        operator = operator.toLowerCase();
         switch(operator){
             case "*":
                 result += (Integer)firstObject * (Integer)secondObject;

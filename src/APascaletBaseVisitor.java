@@ -339,8 +339,27 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
 
         switch (operator.toLowerCase()){
-            case "=": return firstObject.equals(secondObject);
-            case "<>": return !firstObject.equals(secondObject);
+            case "=":
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                    return ((Integer) firstObject).equals((Integer) secondObject);
+                else if((firstObject instanceof String) && (secondObject instanceof  String))
+                    return ((String) firstObject).compareTo((String) secondObject) == 0;
+                else if((firstObject instanceof Character) && (secondObject instanceof Character))
+                    return ((Character) firstObject).compareTo((Character) secondObject) == 0;
+                else if((firstObject instanceof Boolean) && (secondObject instanceof Boolean))
+                    return ((Boolean) firstObject) == ((Boolean) secondObject);
+                break;
+            case "<>":
+
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                    return (Integer) firstObject != (Integer) secondObject;
+                else if((firstObject instanceof String) && (secondObject instanceof  String))
+                    return ((String) firstObject).compareTo((String) secondObject) != 0;
+                else if((firstObject instanceof Character) && (secondObject instanceof Character))
+                    return ((Character) firstObject).compareTo((Character) secondObject) != 0;
+                else if((firstObject instanceof Boolean) && (secondObject instanceof Boolean))
+                    return ((Boolean) firstObject) == ((Boolean) secondObject);
+                break;
             case "<":
                     if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
                         return (Integer) firstObject < (Integer) secondObject;

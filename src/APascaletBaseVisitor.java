@@ -232,7 +232,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     @Override
     public Object visitExpression(APascaletParser.ExpressionContext ctx) {
-
         if(ctx.relationaloperator() != null && visit(ctx.expression()) == null) // todo @caleb with relation op but 2nd var is not valid
             error("", ctx);
 
@@ -242,6 +241,25 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                     visit(ctx.expression()));
 
         else return visit(ctx.simpleExpression());
+    }
+    @Override
+    public Object visitSimpleExpression(APascaletParser.SimpleExpressionContext ctx) {
+
+
+        if(ctx.additiveoperator()!=null){
+            evaluateAdditiveExpression(ctx.additiveoperator().getText(), ctx.term(),ctx.simpleExpression());
+        }
+
+        return visitChildren(ctx);
+    }
+
+    @Override
+    public Object visitTerm(APascaletParser.TermContext ctx) {
+        if(ctx.multiplicativeoperator()!=null){
+            //evaluateMultiplicativeOperator(ctx.multiplicativeoperator(),)
+        }
+
+        return visitChildren(ctx);
     }
 
     @Override
@@ -277,10 +295,22 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             return !firstObject;
     }
 
-    private int evaluateExpression(APascaletParser.ExpressionContext expression){
+
+    private int evaluateAdditiveExpression(String operator, Object firstObject, Object secondObject){
         int result = 0;
-        String exp = expression.getText();
-        expression.addChild( expression);
+
+        switch(operator){
+            case "+":
+                break;
+
+        }
+
+        return result;
+    }
+
+    private int evaluateMultiplicativeOperator(String operator, Integer firstObject, Integer secondObject){
+        int result = 0;
+
         return result;
     }
 

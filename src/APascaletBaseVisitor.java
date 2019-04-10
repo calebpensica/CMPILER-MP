@@ -359,7 +359,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         return visitChildren(ctx);
     }
-    
+
     private Object evaluateAdditiveExpression(String operator, Object firstObject, Object secondObject){
         Integer result = 0;
         String stringResult = "";
@@ -373,7 +373,10 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 }
                 break;
             case "-":
-                result += (Integer)firstObject - (Integer)secondObject;
+                if(firstObject instanceof  Integer && secondObject instanceof  Integer)
+                    result += (Integer)firstObject - (Integer)secondObject;
+                else
+                    error("Additive expression error", null);
                 break;
 
         }

@@ -679,21 +679,13 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     @Override
     public Object visitIfStatement(APascaletParser.IfStatementContext ctx) {
-        boolean condition;
-        if(visit(ctx.expression()) instanceof Boolean)
-        {
-            condition = (Boolean) visit(ctx.expression());
-            if(condition){
+
+        if(visit(ctx.expression()) instanceof Boolean) {
+            if ((Boolean)visit(ctx.expression()))
                 visit(ctx.statement(0));
-                return null;
-            }
-            else if(ctx.ELSE() != null && !condition){
-                visit(ctx.statement(1));
-                return null;
-            }
-        }
-        else
-            error("Not a valid expression error", ctx);
-        return super.visitIfStatement(ctx);
+            else visit(ctx.statement(1));
+        } else error("Expecting an expression in IF ELSE statement ", ctx);
+
+        return null;
     }
 }

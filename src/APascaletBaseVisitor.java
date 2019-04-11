@@ -1,6 +1,4 @@
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import gen.APascaletParser;
-import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.HashMap;
@@ -36,12 +34,11 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         return null;
     }
 
-    private boolean replaceVariableValue(String key, Object newValue){
+    private boolean replaceVariableValue(String key, Object newValue, ParserRuleContext ctx){
 
+        if(getVariable(key).getClass()!=newValue.getClass())
+            error("Datatype Mismatch.", ctx);
         if (!localVariables.empty() && localVariables.peek().containsKey(key)){
-            if(localVariables.peek().get(key).getClass() != newValue.getClass()){
-                //error("Datatype Mismatch.", ctx);
-            }
 
             localVariables.peek().put(key,newValue); //unsure
             return true;
@@ -313,15 +310,15 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                         Integer intInput = 0;
                         try {
                             intInput = Integer.parseInt(input); //todo check for error
-                        } catch (NumberFormatException e) {
+                        } catch (Exception e) {
                             error("Input mismatch. ", ctx);
                         }
-                        replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), intInput);
+                        replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), intInput, ctx);
                     } else if (x instanceof String) {
-                        replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), input);
+                        replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), input, ctx);
                     } else if (x instanceof Character) {
                         Character charInput = input.toCharArray()[0];
-                        replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), charInput);
+                        replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), charInput, ctx);
                     } else {
                         error("Variable does not exist.", ctx);
                     }
@@ -409,7 +406,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             error("Variable does not exist", ctx);
 
 
-        replaceVariableValue(ctx.variable().identifier().getText().toLowerCase(), visit(ctx.expression()));
+        replaceVariableValue(ctx.variable().identifier().getText().toLowerCase(), visit(ctx.expression()), ctx);
 
         return null;
     }
@@ -466,11 +463,11 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         if(!containsVariable(key))
             error("Variable \"" + key + "\" is not declared", ctx);
 
-        replaceVariableValue(key, initVal);
+        replaceVariableValue(key, initVal, ctx);
         finalVal += (ascending ? 1 : -1);
         while((Integer)getVariable(key)!= finalVal){
             visit(ctx.statement());
-            replaceVariableValue(key, (Integer)getVariable(key) + (ascending ? 1 : -1));
+            replaceVariableValue(key, (Integer)getVariable(key) + (ascending ? 1 : -1), ctx);
         }
 
         return null;

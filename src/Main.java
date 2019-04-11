@@ -41,6 +41,6 @@ public class Main {
 
         APascaletBaseVisitor calcVisitor = new APascaletBaseVisitor();
         Object result = calcVisitor.visit(tree);
-        System.out.println("Result: " + result);
+//        System.out.println("Result: " + result);
     }
 }

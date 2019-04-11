@@ -681,11 +681,12 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     @Override
     public Object visitIfStatement(APascaletParser.IfStatementContext ctx) {
-
+        System.out.println((Boolean)visit(ctx.expression()));
         if(visit(ctx.expression()) instanceof Boolean) {
             if ((Boolean)visit(ctx.expression()))
                 visit(ctx.statement(0));
-            else visit(ctx.statement(1));
+            else if (ctx.ELSE() != null && visit(ctx.statement(1)) != null)
+                visit(ctx.statement(1));
         } else error("Expecting an expression in IF ELSE statement ", ctx);
 
         return null;

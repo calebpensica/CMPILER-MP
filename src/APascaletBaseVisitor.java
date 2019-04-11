@@ -4,8 +4,8 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Scanner;
+import java.util.List;
 import java.util.Stack;
 
 public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
@@ -158,7 +158,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
 
     public void detectConstantDataType(APascaletParser.ConstantDefinitionContext ctx){
-        if((ctx.constant().sign() != null || ctx.constant().unsignedNumber() != null))
+        if(ctx.constant().sign() != null || ctx.constant().unsignedNumber() != null)
         {
             if(!checkHashTables(ctx.identifier().getText().toLowerCase()))
             {
@@ -268,37 +268,38 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         } else if(functionList.containsKey(ctx.identifier().getText().toLowerCase())){
             executeFunction(functionList.get(ctx.identifier().getText().toLowerCase()));
-        } else if(ctx.identifier().getText().equalsIgnoreCase("readln")){
+        }  else if(ctx.identifier().getText().equalsIgnoreCase("readln")) {
             Scanner sc = new Scanner(System.in);
             String input;
-            for(int i = 0; i < ctx.parameterList().actualParameter().size(); i++){
+            for (int i = 0; i < ctx.parameterList().actualParameter().size(); i++) {
                 System.out.println("Enter input:");
                 input = sc.nextLine();
                 System.out.println("Input: " + input);
                 Object x = getVariable(ctx.parameterList().actualParameter().get(i).getText());
-                if(x!=null){
-                    if(x instanceof Integer){
+                if (x != null) {
+                    if (x instanceof Integer) {
                         Integer intInput = 0;
                         try {
                             intInput = Integer.parseInt(input); //todo check for error
-                        } catch (NumberFormatException e){
+                        } catch (NumberFormatException e) {
                             error("Input mismatch. ", ctx);
                         }
                         replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), intInput);
-                    }else if(x instanceof String){
+                    } else if (x instanceof String) {
                         replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), input);
-                    }else if(x instanceof Character){
+                    } else if (x instanceof Character) {
                         Character charInput = input.toCharArray()[0];
-                       replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), charInput);
+                        replaceVariableValue(ctx.parameterList().actualParameter().get(i).getText(), charInput);
                     } else {
-                        error("Variable does not exist.",ctx);
+                        error("Variable does not exist.", ctx);
                     }
                 }
             }
-            //todo add other procedure statements (procedure function calls)
         }
         else {
-            //error
+            System.out.println(ctx.identifier().getText());
+            error("Invalid identifier.",ctx);
+            //todo add other procedure statements (procedure function calls)
         }
 
         return super.visitProcedureStatement(ctx);
@@ -328,6 +329,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             localVariables.pop();
         }
     }
+
     public boolean checkHashTables(String checkName)
     {
         if(functionList.containsKey(checkName) || globalVariables.containsKey(checkName))
@@ -341,6 +343,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         return false;
 
     }
+
     @Override
     public Object visitExpression(APascaletParser.ExpressionContext ctx) {
 
@@ -350,9 +353,9 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         if(ctx.relationaloperator() != null)
             return evaluateRelationalOperators(ctx.relationaloperator().getText(),
-                                               visit(ctx.simpleExpression()),
-                                               visit(ctx.expression()),
-                                               ctx);
+                                                visit(ctx.simpleExpression()),
+                                                visit(ctx.expression()),
+                                                ctx);
 
         else return visit(ctx.simpleExpression());
     }
@@ -380,10 +383,12 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 else System.out.println((ctx.MINUS() != null || ctx.PLUS() != null) + " sasad " +
                             (visit(ctx.factor()) instanceof Integer));
             } else error("Expecting integer in minus unary operator", ctx);
-            if(ctx.factor() != null)
-                return visit(ctx.factor());
-            else
-                return "";
+
+
+        if(ctx.factor() != null)
+            return visit(ctx.factor());
+        else
+            return "";
     }
 
     @Override
@@ -407,12 +412,31 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     @Override
     public Object visitForStatement(APascaletParser.ForStatementContext ctx) {
-        int startingValue, endingValue;
-        return super.visitForStatement(ctx);
+        if(!(visit(ctx.forList().initialValue()) instanceof Integer &&
+                visit(ctx.forList().finalValue()) instanceof Integer))
+            error("Initial and final values must be an integer for FOR statements", ctx);
+
+        int initVal  = (Integer)visit(ctx.forList().initialValue()),
+                finalVal = (Integer)visit(ctx.forList().finalValue());
+        boolean ascending = ctx.forList().DOWNTO() == null;
+        String  key       = visit(ctx.identifier()).toString().toLowerCase();
+//        System.out.println(visit(ctx.identifier().));
+        if(getVariable(key) == null)
+            error("Variable \"" + key + "\" is not declared", ctx);
+
+        replaceVariableValue(key, initVal);
+        finalVal += (ascending ? 1 : -1);
+        while((Integer)getVariable(key)!= finalVal){
+            visit(ctx.statement());
+            replaceVariableValue(key, (Integer)getVariable(key) + (ascending ? 1 : -1));
+        }
+
+        return null;
+//        return super.visitForStatement(ctx);
     }
 
     public Object evaluateRelationalOperators(String operator, Object firstObject,
-                                               Object secondObject, APascaletParser.ExpressionContext ctx){
+                                              Object secondObject, APascaletParser.ExpressionContext ctx){
 
 
         switch (operator.toLowerCase()){
@@ -429,7 +453,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             case "<>":
 
                 if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
-                    return (Integer) firstObject != (Integer) secondObject;
+                    return !((Integer) firstObject).equals((Integer) secondObject);
                 else if((firstObject instanceof String) && (secondObject instanceof  String))
                     return ((String) firstObject).compareTo((String) secondObject) != 0;
                 else if((firstObject instanceof Character) && (secondObject instanceof Character))
@@ -438,21 +462,21 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                     return ((Boolean) firstObject) == ((Boolean) secondObject);
                 break;
             case "<":
-                    if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
-                        return (Integer) firstObject < (Integer) secondObject;
-                    else if((firstObject instanceof String) && (secondObject instanceof  String))
-                        return ((String) firstObject).compareTo((String) secondObject) < 0;
-                    else if((firstObject instanceof Character) && (secondObject instanceof Character))
-                            return ((Character) firstObject).compareTo((Character) secondObject) < 0;
-                    break;
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                    return (Integer) firstObject < (Integer) secondObject;
+                else if((firstObject instanceof String) && (secondObject instanceof  String))
+                    return ((String) firstObject).compareTo((String) secondObject) < 0;
+                else if((firstObject instanceof Character) && (secondObject instanceof Character))
+                    return ((Character) firstObject).compareTo((Character) secondObject) < 0;
+                break;
             case ">":
-                    if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
-                        return (Integer) firstObject > (Integer) secondObject;
-                    else if((firstObject instanceof String) && (secondObject instanceof  String))
-                        return ((String) firstObject).compareTo((String) secondObject) > 0;
-                    else if((firstObject instanceof Character) && (secondObject instanceof Character))
-                        return ((Character) firstObject).compareTo((Character) secondObject) > 0;
-                    break;
+                if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
+                    return (Integer) firstObject > (Integer) secondObject;
+                else if((firstObject instanceof String) && (secondObject instanceof  String))
+                    return ((String) firstObject).compareTo((String) secondObject) > 0;
+                else if((firstObject instanceof Character) && (secondObject instanceof Character))
+                    return ((Character) firstObject).compareTo((Character) secondObject) > 0;
+                break;
             case ">=":
                 if((firstObject instanceof Integer) && (secondObject instanceof  Integer))
                     return (Integer) firstObject >= (Integer) secondObject;
@@ -514,7 +538,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     public Object visitTerm(APascaletParser.TermContext ctx) {
         if(ctx.multiplicativeoperator()!=null){
             return evaluateMultiplicativeOperator(ctx.multiplicativeoperator().getText(),
-                                                  visit(ctx.signedFactor()), visit(ctx.term()), ctx);
+                    visit(ctx.signedFactor()), visit(ctx.term()), ctx);
         }
         return visitChildren(ctx);
     }
@@ -526,7 +550,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         {
             HashMap<String, Object> localConstant = new HashMap<>();
 
-            if((ctx.constant().sign() != null || ctx.constant().unsignedNumber() != null))
+            if(ctx.constant().sign() != null || ctx.constant().unsignedNumber() != null)
             {
                 if(!checkHashTables(ctx.identifier().getText().toLowerCase()))
                 {
@@ -610,6 +634,12 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     public Object visitBool(APascaletParser.BoolContext ctx) {
         return new Boolean(ctx.getText());
     }
+
+    @Override
+    public Object visitIdentifier(APascaletParser.IdentifierContext ctx) {
+        return ctx.getText();
+    }
+
     @Override
     public Object visitIfStatement(APascaletParser.IfStatementContext ctx) {
         boolean condition;

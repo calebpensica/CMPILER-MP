@@ -57,7 +57,10 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             cp.setParameters(parameterList);
         }
         cp.setCurrentContext(ctx.block());
-        functionList.put(ctx.identifier().getText().toLowerCase(), cp);
+        if(!checkHashTables(ctx.identifier().getText().toLowerCase()))
+            functionList.put(ctx.identifier().getText().toLowerCase(), cp);
+        else
+            error("Identifier already in use", ctx);
         return super.visitProcedureDeclaration(ctx);
     }
 
@@ -77,7 +80,10 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         }
         cp.setCurrentContext(ctx.block());
         cp.setFunctionContext(ctx);
-        functionList.put(ctx.identifier().getText().toLowerCase(), cp);
+        if (!checkHashTables(ctx.identifier().getText().toLowerCase()))
+            functionList.put(ctx.identifier().getText().toLowerCase(), cp);
+        else
+            error("Identifier already in use", ctx);
         return super.visitFunctionDeclaration(ctx);
     }
     @Override
@@ -152,16 +158,26 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
 
     public void detectConstantDataType(APascaletParser.ConstantDefinitionContext ctx){
-        if(ctx.constant().sign() != null || ctx.constant().unsignedNumber() != null)
+        if((ctx.constant().sign() != null || ctx.constant().unsignedNumber() != null))
         {
-            final int x = Integer.parseInt(ctx.constant().getText());
-            globalVariables.put(ctx.identifier().getText().toLowerCase(), x);
+            if(!checkHashTables(ctx.identifier().getText().toLowerCase()))
+            {
+                final int x = Integer.parseInt(ctx.constant().getText());
+                globalVariables.put(ctx.identifier().getText().toLowerCase(), x);
+            }
+            else
+                error("Identifier already in use", ctx);
+
         }
 
-        else if(ctx.constant().string() != null)
+        else if(ctx.constant().string() != null && !checkHashTables(ctx.identifier().getText().toLowerCase()))
         {
-            final String x = ctx.constant().getText();
-            globalVariables.put(ctx.identifier().getText().toLowerCase(), x);
+            if(!checkHashTables(ctx.identifier().getText().toLowerCase())) {
+                final String x = ctx.constant().getText();
+                globalVariables.put(ctx.identifier().getText().toLowerCase(), x);
+            }
+            else
+                error("Identifier already in use", ctx);
         }
 
 
@@ -182,8 +198,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 System.out.println("type Integer");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
-                    if(!variables.containsKey(param[x]))
-                        variables.put(param[x], 0);
+                    if(!checkHashTables(param[x].toLowerCase()))
+                        variables.put(param[x].toLowerCase(), 0);
                     else{
                         error("Variable assignment error", ctx);
                         return;
@@ -195,7 +211,12 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 System.out.println("type String");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
-                    variables.put(param[x], "");
+                    if(!checkHashTables(param[x].toLowerCase()))
+                        variables.put(param[x].toLowerCase(), "");
+                    else{
+                        error("Variable assignment error", ctx);
+                        return;
+                    }
                 }
             }
             if(ctx.type().simpleType().typeIdentifier().BOOLEAN() != null)
@@ -203,7 +224,12 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 System.out.println("type Boolean");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
-                    variables.put(param[x], false);
+                    if(!checkHashTables(param[x].toLowerCase()))
+                        variables.put(param[x].toLowerCase(), false);
+                    else{
+                        error("Variable assignment error", ctx);
+                        return;
+                    }
                 }
             }
             if(ctx.type().simpleType().typeIdentifier().CHAR() != null)
@@ -211,7 +237,12 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 System.out.println("type Char");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
-                    variables.put(param[x], ' ');
+                    if(!checkHashTables(param[x].toLowerCase()))
+                        variables.put(param[x].toLowerCase(), ' ');
+                    else{
+                        error("Variable assignment error", ctx);
+                        return;
+                    }
                 }
             }
         }
@@ -286,15 +317,30 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             //push variable name check if ctx is current context then pwede ipush
             if(currentContextParameter.getFunctionContext() != null)
             {
-                variables.put(currentContextParameter.getFunctionContext().identifier().getText().toLowerCase(),
-                        currentContextParameter.getFunctionContext().resultType().typeIdentifier().getText());
+                if(!checkHashTables(currentContextParameter.getFunctionContext().identifier().getText()))
+                    variables.put(currentContextParameter.getFunctionContext().identifier().getText().toLowerCase(),
+                            currentContextParameter.getFunctionContext().resultType().typeIdentifier().getText());
+                else
+                    error("Identifier already in use", currentContextParameter.getCurrentContext());
             }
             localVariables.push(variables);
             visit(currentContextParameter.getCurrentContext().compoundStatement());
             localVariables.pop();
         }
     }
+    public boolean checkHashTables(String checkName)
+    {
+        if(functionList.containsKey(checkName) || globalVariables.containsKey(checkName))
+            return true;
+        for(HashMap<String, Object> obj: localVariables)
+        {
+            if(obj.containsKey(checkName))
+                return true;
+        }
 
+        return false;
+
+    }
     @Override
     public Object visitExpression(APascaletParser.ExpressionContext ctx) {
 
@@ -480,18 +526,28 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         {
             HashMap<String, Object> localConstant = new HashMap<>();
 
-            if(ctx.constant().sign() != null || ctx.constant().unsignedNumber() != null)
+            if((ctx.constant().sign() != null || ctx.constant().unsignedNumber() != null))
             {
-                final int x = Integer.parseInt(ctx.constant().getText());
-                localConstant.put(ctx.identifier().getText(), x);
-                localVariables.push(localConstant);
+                if(!checkHashTables(ctx.identifier().getText().toLowerCase()))
+                {
+                    final int x = Integer.parseInt(ctx.constant().getText());
+                    localConstant.put(ctx.identifier().getText().toLowerCase(), x);
+                    localVariables.push(localConstant);
+                }
+                else
+                    error("Identifier already in use", ctx);
             }
 
             else if(ctx.constant().string() != null)
             {
-                final String x = ctx.constant().getText();
-                localConstant.put(ctx.identifier().getText(), x);
-                localVariables.push(localConstant);
+                if(!checkHashTables(ctx.identifier().getText().toLowerCase()))
+                {
+                    final String x = ctx.constant().getText();
+                    localConstant.put(ctx.identifier().getText().toLowerCase(), x);
+                    localVariables.push(localConstant);
+                }
+                else
+                    error("Identifier already in use", ctx);
             }
             else
                 error("Error incompatible type", ctx);

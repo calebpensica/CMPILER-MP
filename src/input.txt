@@ -1,13 +1,16 @@
 program MAIN;
-var X, Y, Z: integer;
-Begin {MAIN}
-   X:=0; Y:=1; Z:=3;
-   { *** 1 *** }
-   write("hello");
-   X:=0; Y:=0; Z:=0;
-   if (x=y) then
-      Begin
-         Y := x;
-      end;
-   { *** 4 *** }
-End. {MAIN}
+var X : integer;
+
+function  resultCheck() : integer;
+var finalValue: integer;
+    begin
+        finalValue := 9 * (10 + 20) - 1;
+        writeln(finalValue);
+        resultCheck := finalValue;
+    end;
+var
+intVal : integer;
+
+begin
+resultCheck();
+end.

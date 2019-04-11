@@ -105,7 +105,7 @@ procedureDeclaration
    ;
 
 formalParameterList
-   : LPAREN formalParameterSection (SEMI formalParameterSection)* RPAREN
+   : LPAREN formalParameterSection? (SEMI formalParameterSection)* RPAREN
    ;
 
 formalParameterSection
@@ -323,6 +323,7 @@ factor
    | unsignedConstant
    | NOT factor
    | bool
+   | emptyStatement
    ;
 
 fragment A

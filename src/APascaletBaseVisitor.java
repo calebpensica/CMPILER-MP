@@ -39,7 +39,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         if(getVariable(key).getClass()!=newValue.getClass())
             error("Datatype Mismatch.", ctx);
         if (!localVariables.empty() && localVariables.peek().containsKey(key)){
-
             localVariables.peek().put(key,newValue); //unsure
             return true;
         }

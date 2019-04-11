@@ -13,6 +13,15 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     private HashMap<String, Object> globalVariables = new HashMap<>();
     private Stack<HashMap<String, Object>> localVariables = new Stack<>();
 
+    private Boolean containsVariable(String key){
+
+        key = key.toLowerCase();
+        if (!localVariables.empty() && localVariables.peek().containsKey(key))
+             return true;
+        else if (globalVariables.containsKey(key))
+             return true;
+        else return false;
+    }
     private Object getVariable(String key) {
 
         key = key.toLowerCase();
@@ -453,8 +462,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 finalVal = (Integer)visit(ctx.forList().finalValue());
         boolean ascending = ctx.forList().DOWNTO() == null;
         String  key       = visit(ctx.identifier()).toString().toLowerCase();
-//        System.out.println(visit(ctx.identifier().));
-        if(getVariable(key) == null)
+        System.out.println(visit(ctx.identifier()) + " | " + visit(ctx.identifier()).toString() + " || " + getVariable(key));
+        if(!containsVariable(key))
             error("Variable \"" + key + "\" is not declared", ctx);
 
         replaceVariableValue(key, initVal);
@@ -675,21 +684,13 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     @Override
     public Object visitIfStatement(APascaletParser.IfStatementContext ctx) {
-        boolean condition;
-        if(visit(ctx.expression()) instanceof Boolean)
-        {
-            condition = (Boolean) visit(ctx.expression());
-            if(condition){
+
+        if(visit(ctx.expression()) instanceof Boolean) {
+            if ((Boolean)visit(ctx.expression()))
                 visit(ctx.statement(0));
-                return null;
-            }
-            else if(ctx.ELSE() != null && !condition){
-                visit(ctx.statement(1));
-                return null;
-            }
-        }
-        else
-            error("Not a valid expression error", ctx);
-        return super.visitIfStatement(ctx);
+            else visit(ctx.statement(1));
+        } else error("Expecting an expression in IF ELSE statement ", ctx);
+
+        return null;
     }
 }

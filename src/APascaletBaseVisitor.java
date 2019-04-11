@@ -30,6 +30,10 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     private boolean replaceVariableValue(String key, Object newValue){
 
         if (!localVariables.empty() && localVariables.peek().containsKey(key)){
+            if(localVariables.peek().get(key).getClass() != newValue.getClass()){
+                //error("Datatype Mismatch.", ctx);
+            }
+
             localVariables.peek().put(key,newValue); //unsure
             return true;
         }
@@ -394,6 +398,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         //  variable ASSIGN expression
         if(getVariable(ctx.variable().identifier().getText()) == null)
             error("Variable does not exist", ctx);
+
 
         replaceVariableValue(ctx.variable().identifier().getText().toLowerCase(), visit(ctx.expression()));
 

@@ -286,7 +286,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             for (int i = 0; i < tempParam.size(); i++)
                 temp.append(visitExpression(tempParam.get(i).expression()));
 
-            System.out.println(temp + (ctx.identifier().getText().equalsIgnoreCase("writeln") ? "\n" : ""));
+            System.out.print(temp + (ctx.identifier().getText().equalsIgnoreCase("writeln") ? "\n" : ""));
 
         } else if(functionList.containsKey(ctx.identifier().getText().toLowerCase())){
             executeFunction(functionList.get(ctx.identifier().getText().toLowerCase()));
@@ -317,7 +317,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             }
         }
         else {
-            System.out.println(ctx.identifier().getText());
             error("Invalid identifier.",ctx);
             //todo add other procedure statements (procedure function calls)
         }
@@ -327,7 +326,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     public void executeFunction(contextParameters currentContextParameter) {
         HashMap<String, Object> variables = new HashMap<>();
-        System.out.println(currentContextParameter.getCurrentContext().getText());
         if (currentContextParameter.getCurrentContext().variableDeclarationPart() != null) {
             List<APascaletParser.VariableDeclarationPartContext> varDecPart = currentContextParameter.getCurrentContext().variableDeclarationPart();
             for (int i = 0; i < varDecPart.size(); i++) {

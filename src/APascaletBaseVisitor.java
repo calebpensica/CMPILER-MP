@@ -149,16 +149,35 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         dataType = dataType.toLowerCase();
         switch (dataType) {
             case "integer":
-                globalVariables.put(ident.getText().toLowerCase(), 0);
+                if(!checkHashTables(ident.getText().toLowerCase()))
+                {
+                    globalVariables.put(ident.getText().toLowerCase(), 0);
+                }
+                else
+                    error("Identifier already in use", ident);
+
                 break;
             case "string":
-                globalVariables.put(ident.getText().toLowerCase(), "");
+                if(!checkHashTables(ident.getText().toLowerCase())) {
+                    globalVariables.put(ident.getText().toLowerCase(), "");
+                }
+                else
+                    error("Identifier already in use", ident);
                 break;
             case "char":
-                globalVariables.put(ident.getText().toLowerCase(), '\0');
+                if(!checkHashTables(ident.getText().toLowerCase())) {
+                    globalVariables.put(ident.getText().toLowerCase(), '\0');
+                }
+                else
+                    error("Identifier already in use", ident);
                 break;
             case "boolean":
-                globalVariables.put(ident.getText().toLowerCase(), Boolean.FALSE);
+                if(!checkHashTables(ident.getText().toLowerCase())) {
+                    globalVariables.put(ident.getText().toLowerCase(), Boolean.FALSE);
+                }
+                else
+                    error("Identifier already in use", ident);
+
                 break;
             default:
 //                            TODO add other kinds of data type
@@ -341,14 +360,23 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     public boolean checkHashTables(String checkName)
     {
+        System.out.println("Check this String " + checkName);
         if(functionList.containsKey(checkName) || globalVariables.containsKey(checkName))
+        {
+            System.out.println("Meron naman eh: Return True");
             return true;
+        }
+
         for(HashMap<String, Object> obj: localVariables)
         {
             if(obj.containsKey(checkName))
+            {
+                System.out.println("Meron naman eh: Return True");
                 return true;
-        }
+            }
 
+        }
+        System.out.println("Wala naman eh: Return False");
         return false;
 
     }

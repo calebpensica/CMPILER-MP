@@ -35,7 +35,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     }
 
     private boolean replaceVariableValue(String key, Object newValue, ParserRuleContext ctx){
-
+        key = key.toLowerCase();
         if(getVariable(key).getClass()!=newValue.getClass())
             error("Datatype Mismatch.", ctx);
         if (!localVariables.empty() && localVariables.peek().containsKey(key)){
@@ -47,7 +47,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             globalVariables.put(key, newValue);
             return true;
         }
-
 
         return false;
     }
@@ -114,7 +113,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
 //        Setting global variables
         for(APascaletParser.VariableDeclarationPartContext varBlock : ctx.block().variableDeclarationPart()){
-            System.out.println(varBlock.getText());
 
             for(int j = 0; j < varBlock.variableDeclaration().size(); j++) {
                 APascaletParser.VariableDeclarationContext varBlockDeclarations = varBlock.variableDeclaration(j);
@@ -218,13 +216,11 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
         for(int i = 0; i < tempParam.size(); i++)
         {
             param[i] = tempParam.get(i).getText().toLowerCase();
-            System.out.println("variable name: " + param[i]);
         }
         if(ctx.type().simpleType() != null)
         {
             if(ctx.type().simpleType().typeIdentifier().INTEGER() != null)
             {
-                System.out.println("type Integer");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
                     if(!checkHashTables(param[x].toLowerCase()))
@@ -237,7 +233,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             }
             if(ctx.type().simpleType().typeIdentifier().STRING() != null)
             {
-                System.out.println("type String");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
                     if(!checkHashTables(param[x].toLowerCase()))
@@ -250,7 +245,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             }
             if(ctx.type().simpleType().typeIdentifier().BOOLEAN() != null)
             {
-                System.out.println("type Boolean");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
                     if(!checkHashTables(param[x].toLowerCase()))
@@ -263,7 +257,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             }
             if(ctx.type().simpleType().typeIdentifier().CHAR() != null)
             {
-                System.out.println("type Char");
                 for(int x = 0; x < tempParam.size(); x++)
                 {
                     if(!checkHashTables(param[x].toLowerCase()))
@@ -301,9 +294,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             Scanner sc = new Scanner(System.in);
             String input;
             for (int i = 0; i < ctx.parameterList().actualParameter().size(); i++) {
-                System.out.println("Enter input:");
                 input = sc.nextLine();
-                System.out.println("Input: " + input);
                 Object x = getVariable(ctx.parameterList().actualParameter().get(i).getText());
                 if (x != null) {
                     if (x instanceof Integer) {
@@ -681,7 +672,6 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     @Override
     public Object visitIfStatement(APascaletParser.IfStatementContext ctx) {
-        System.out.println((Boolean)visit(ctx.expression()));
         if(visit(ctx.expression()) instanceof Boolean) {
             if ((Boolean)visit(ctx.expression()))
                 visit(ctx.statement(0));

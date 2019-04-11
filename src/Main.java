@@ -29,13 +29,13 @@ public class Main {
         APascaletLexer lexer = new APascaletLexer(input);
 
         lexer.removeErrorListeners();
-        lexer.addErrorListener(new ErrorMessages());
+        lexer.addErrorListener(new LexicalErrorMessages());
 
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         APascaletParser parser = new APascaletParser(tokens);
 
         parser.removeErrorListeners();
-        parser.addErrorListener(new ErrorMessages());
+        parser.addErrorListener(new ParserErrorMessages());
 
         ParseTree tree = parser.program();
 

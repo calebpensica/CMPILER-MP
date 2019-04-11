@@ -361,23 +361,23 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     public boolean checkHashTables(String checkName)
     {
-        System.out.println("Check this String " + checkName);
+//        System.out.println("Check this String " + checkName);
         if(functionList.containsKey(checkName) || globalVariables.containsKey(checkName))
         {
-            System.out.println("Meron naman eh: Return True");
+//            System.out.println("Meron naman eh: Return True");
             return true;
         }
 
-        for(HashMap<String, Object> obj: localVariables)
+        /*for(HashMap<String, Object> obj: localVariables)
         {
             if(obj.containsKey(checkName))
             {
-                System.out.println("Meron naman eh: Return True");
+//                System.out.println("Meron naman eh: Return True");
                 return true;
             }
 
-        }
-        System.out.println("Wala naman eh: Return False");
+        }*/
+//        System.out.println("Wala naman eh: Return False");
         return false;
 
     }

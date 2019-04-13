@@ -9,6 +9,6 @@ public class ParserErrorMessages extends BaseErrorListener {
                             String msg, RecognitionException e) {
 
         System.out.println("Parser error: Line " + line + " | " + msg);
-       // System.exit(-1);
+       System.exit(-1);
     }
 }

@@ -274,7 +274,7 @@ constList
    ;
 
 functionDeclaration
-   : FUNCTION identifier (formalParameterList)? COLON resultType SEMI block
+   : FUNCTION identifier (formalParameterList)? COLON resultT SEMI block
    ;
 
 resultType

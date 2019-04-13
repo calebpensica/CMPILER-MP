@@ -1,3 +1,6 @@
+// Reference: https://github.com/antlr/grammars-v4/tree/master/pascal?fbclid=IwAR39WC0o_739rWoVLv82DXY553Zmam05efg2-uxzsz5NvnzQ_6zHKCmyqWw
+// (Modified)
+
 grammar APascalet;
 
 

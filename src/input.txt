@@ -1,16 +1,16 @@
 program MAIN;
-var X : integer;
 
-function  resultCheck() : integer;
-var finalValue: integer;
+
+procedure proc();
+    var y: integer;
     begin
-        finalValue := 9 * (10 + 20) - 1;
-        writeln(finalValue);
-        resultCheck := finalValue;
+        y := 3;
+        writeln('localVar Y proc(): ', y);
     end;
-var
-intVal : integer;
 
 begin
-resultCheck();
+    proc();
+    writeln('true or false: ', true or false);
+    writeln('1 + 2 * 3: ', 1 + 2 * 3);
+    writeln('2 > 3: ', 2 > 3);
 end.

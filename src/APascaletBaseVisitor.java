@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
+
     private HashMap<String, contextParameters> functionList = new HashMap<>();
     private HashMap<String, Object> globalVariables = new HashMap<>();
     private Stack<HashMap<String, Object>> localVariables = new Stack<>();
@@ -15,9 +16,9 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         key = key.toLowerCase();
         if (!localVariables.empty() && localVariables.peek().containsKey(key))
-             return true;
+            return true;
         else if (globalVariables.containsKey(key))
-             return true;
+            return true;
         else return false;
     }
     private Object getVariable(String key) {
@@ -36,7 +37,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     private boolean replaceVariableValue(String key, Object newValue, ParserRuleContext ctx){
         key = key.toLowerCase();
-        if(getVariable(key).getClass()!=newValue.getClass())
+        if(getVariable(key) != null && getVariable(key).getClass() != newValue.getClass())
             error("Datatype Mismatch.", ctx);
         if (!localVariables.empty() && localVariables.peek().containsKey(key)){
             localVariables.peek().put(key,newValue); //unsure
@@ -69,7 +70,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             functionList.put(ctx.identifier().getText().toLowerCase(), cp);
         else
             error("Identifier already in use", ctx);
-        return super.visitProcedureDeclaration(ctx);
+        return null;
     }
 
     @Override
@@ -92,7 +93,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             functionList.put(ctx.identifier().getText().toLowerCase(), cp);
         else
             error("Identifier already in use", ctx);
-        return super.visitFunctionDeclaration(ctx);
+//        return super.visitFunctionDeclaration(ctx);
+        return null;
     }
     @Override
     public Object visitProgram(APascaletParser.ProgramContext ctx) {
@@ -316,6 +318,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             }
         }
         else {
+//            System.out.println(ctx.identifier().getText());
             error("Invalid identifier.",ctx);
             //todo add other procedure statements (procedure function calls)
         }
@@ -325,6 +328,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
     public void executeFunction(contextParameters currentContextParameter) {
         HashMap<String, Object> variables = new HashMap<>();
+//        System.out.println(currentContextParameter.getCurrentContext().getText());
+//        System.out.println(varDecPart.size() + " | " + varDecPart.get(0).variableDeclaration().size());
         if (currentContextParameter.getCurrentContext().variableDeclarationPart() != null) {
             List<APascaletParser.VariableDeclarationPartContext> varDecPart = currentContextParameter.getCurrentContext().variableDeclarationPart();
             for (int i = 0; i < varDecPart.size(); i++) {
@@ -335,6 +340,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
             //push variable name check if ctx is current context then pwede ipush
             if(currentContextParameter.getFunctionContext() != null)
             {
+//                TODO ERROR IF IDENTIFIER ALREADY IN USE
                 if(!checkHashTables(currentContextParameter.getFunctionContext().identifier().getText()))
                     variables.put(currentContextParameter.getFunctionContext().identifier().getText().toLowerCase(),
                             currentContextParameter.getFunctionContext().resultType().typeIdentifier().getText());
@@ -379,9 +385,9 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
 
         if(ctx.relationaloperator() != null)
             return evaluateRelationalOperators(ctx.relationaloperator().getText(),
-                                                visit(ctx.simpleExpression()),
-                                                visit(ctx.expression()),
-                                                ctx);
+                    visit(ctx.simpleExpression()),
+                    visit(ctx.expression()),
+                    ctx);
 
         else return visit(ctx.simpleExpression());
     }
@@ -390,9 +396,9 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
     @Override
     public Object visitAssignmentStatement(APascaletParser.AssignmentStatementContext ctx){
         //  variable ASSIGN expression
-        if(getVariable(ctx.variable().identifier().getText()) == null)
+//        System.out.println(ctx.variable().identifier().getText() + " " + containsVariable(ctx.variable().identifier().getText()));
+        if(!containsVariable(ctx.variable().identifier().getText()))
             error("Variable does not exist", ctx);
-
 
         replaceVariableValue(ctx.variable().identifier().getText().toLowerCase(), visit(ctx.expression()), ctx);
 
@@ -407,8 +413,8 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                     return -(Integer)visit(ctx.factor());
                 else if(ctx.PLUS() != null)
                     return +(Integer)visit(ctx.factor());
-                else System.out.println((ctx.MINUS() != null || ctx.PLUS() != null) + " sasad " +
-                            (visit(ctx.factor()) instanceof Integer));
+                else ;/*System.out.println((ctx.MINUS() != null || ctx.PLUS() != null) + " sasad " +
+                            (visit(ctx.factor()) instanceof Integer));*/
             } else error("Expecting integer in minus unary operator", ctx);
 
 
@@ -447,7 +453,7 @@ public class APascaletBaseVisitor extends gen.APascaletBaseVisitor<Object> {
                 finalVal = (Integer)visit(ctx.forList().finalValue());
         boolean ascending = ctx.forList().DOWNTO() == null;
         String  key       = visit(ctx.identifier()).toString().toLowerCase();
-        System.out.println(visit(ctx.identifier()) + " | " + visit(ctx.identifier()).toString() + " || " + getVariable(key));
+//        System.out.println(visit(ctx.identifier()) + " | " + visit(ctx.identifier()).toString() + " || " + getVariable(key));
         if(!containsVariable(key))
             error("Variable \"" + key + "\" is not declared", ctx);
 
